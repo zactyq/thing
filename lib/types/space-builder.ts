@@ -29,6 +29,7 @@ export interface NodeData {
   typeId?: string;         // Reference to the asset type
   groupId: string | null;  // ID of the parent group, if any
   type?: "asset" | "group"; // Discriminator for node type
+  parentId?: string;       // ID of the parent node (for hierarchical relationships)
 }
 
 /**

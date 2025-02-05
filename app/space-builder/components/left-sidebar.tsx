@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import type { NodeData } from "@/lib/types/space-builder"
 import { SpaceBuilderService } from "@/lib/services/space-builder-service"
+import { iconMap } from "@/lib/utils/icon-map"
+import type { LucideIcon } from "lucide-react"
 
 interface LeftSidebarProps {
   nodes: Node<NodeData>[]
@@ -22,10 +24,10 @@ const spaceBuilderService = new SpaceBuilderService()
  */
 export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelect }: LeftSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-  const [icons, setIcons] = useState<Record<string, any>>({})
+  const [icons, setIcons] = useState<Record<string, LucideIcon>>({})
   const [assetTypes, setAssetTypes] = useState<Record<string, any>>({})
 
-  // Load asset types and their icons
+  // Load asset types and their icons when component mounts
   useEffect(() => {
     const loadAssetTypes = async () => {
       try {
@@ -35,20 +37,6 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
           assetTypes.map(type => [type.id, type])
         )
         setAssetTypes(assetTypeMap)
-
-        // Load icons for each asset type
-        const iconPromises = assetTypes.map(async (asset) => {
-          try {
-            const icon = await import(`lucide-react/dist/esm/icons/${asset.icon}`)
-            return [asset.id, icon.default]
-          } catch (error) {
-            console.error(`Failed to load icon for ${asset.id}:`, error)
-            return [asset.id, null]
-          }
-        })
-
-        const loadedIcons = await Promise.all(iconPromises)
-        setIcons(Object.fromEntries(loadedIcons))
       } catch (error) {
         console.error('Failed to load asset types:', error)
       }
@@ -75,20 +63,18 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
     setExpandedGroups(newExpanded)
   }
 
-  const getNodeIcon = (node: Node<NodeData>) => {
+  const getNodeIcon = (node: Node<NodeData>): LucideIcon | null => {
     if (node.type === "group") {
       return expandedGroups.has(node.id) ? FolderOpen : Folder
     }
     
-    if (node.data.typeId) {
-      return icons[node.data.typeId] || null
+    if (node.data.typeId && assetTypes[node.data.typeId]) {
+      const assetType = assetTypes[node.data.typeId]
+      return iconMap[assetType.icon] || null
     }
     
     return null
   }
-
-  // Get root level nodes (those without a parent)
-  const rootNodes = nodes.filter(node => !node.parentNode)
 
   const renderNodes = (nodes: Node<NodeData>[], parentId: string | null = null, level = 0) => {
     // Filter nodes that belong to this level

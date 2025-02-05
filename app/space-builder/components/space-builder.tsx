@@ -20,7 +20,6 @@ import { LeftSidebar } from "./left-sidebar"
 import { RightSidebar } from "./right-sidebar"
 import { FloatingPalette } from "./floating-palette"
 import AssetNode from "./asset-node"
-import { LabeledGroupNode } from "@/components/labeled-group-node"
 import GroupNode from './group-node'
 import { SpaceBuilderService } from "@/lib/services/space-builder-service"
 import type { NodeData } from "@/lib/types/space-builder"
@@ -50,7 +49,7 @@ export function SpaceBuilder() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   
   // Track currently selected node for property editing
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null)
+  const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null)
   
   // Control sidebar visibility states
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
@@ -149,7 +148,7 @@ export function SpaceBuilder() {
    * Update an existing node's properties
    * @param updatedNode - Node with updated properties
    */
-  const updateNode = useCallback((updatedNode: Node) => {
+  const updateNode = useCallback((updatedNode: Node<NodeData>) => {
     setNodes((nds) => {
       const newNodes = nds.map((node) => {
         if (node.id === updatedNode.id) {
