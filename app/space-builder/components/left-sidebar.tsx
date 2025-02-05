@@ -112,6 +112,11 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
     })
   }
 
+  const onDragStart = (event: React.DragEvent, nodeType: string) => {
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <div 
       className={`bg-gray-100 transition-all duration-300 ease-in-out ${

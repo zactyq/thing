@@ -139,12 +139,9 @@ export class SpaceBuilderService {
    * Fetch the canvas state for a specific space
    * @param spaceId - Identifier for the space to load
    */
-  async getCanvasState(spaceId: string): Promise<CanvasStateResponse> {
-    // TODO: Replace with actual API call
-    // const response = await fetch(`${this.config.baseUrl}/spaces/${spaceId}/canvas`, {
-    //   headers: { 'Authorization': `Bearer ${this.config.apiKey}` }
-    // });
-    // return response.json();
+  async getCanvasState(/* spaceId: string */): Promise<CanvasStateResponse> {
+    // TODO: Replace with actual API call using spaceId
+    // const response = await fetch(`${this.config.baseUrl}/spaces/${spaceId}/canvas`...
 
     // Currently returns mock data
     return { canvasState: mockCanvasState };
