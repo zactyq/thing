@@ -2,15 +2,14 @@
  * GroupNode Component
  * 
  * A specialized node type that can contain other nodes and provides visual grouping functionality.
- * This component serves as a wrapper around LabeledGroupNode, adding connection handles for the space builder.
+ * This component provides connection handles for the space builder.
  */
 
 import { memo } from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
-import { LabeledGroupNode } from '@/components/labeled-group-node'
 import type { NodeData } from "@/lib/types/space-builder"
 
-const GroupNode = memo(({ data, selected }: NodeProps<NodeData>) => {
+const GroupNode = memo(({}: NodeProps<NodeData>) => {
   return (
     <>
       <Handle
@@ -23,8 +22,6 @@ const GroupNode = memo(({ data, selected }: NodeProps<NodeData>) => {
         position={Position.Bottom}
         className="w-16 !bg-transparent !border-0"
       />
-      
-      
     </>
   )
 })
