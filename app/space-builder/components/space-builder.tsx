@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -14,6 +14,10 @@ import ReactFlow, {
   type Edge,
   type Connection,
   type NodeTypes,
+  useReactFlow,
+  ReactFlowProvider,
+  type NodeDragHandler,
+  ConnectionMode,
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { LeftSidebar } from "./left-sidebar"
@@ -23,11 +27,12 @@ import AssetNode from "./asset-node"
 import GroupNode from './group-node'
 import { SpaceBuilderService } from "@/lib/services/space-builder-service"
 import type { NodeData } from "@/lib/types/space-builder"
+import { LabeledGroupNode } from "@/components/labeled-group-node"
 
 // Define custom node types that can be rendered in the flow
 const nodeTypes: NodeTypes = {
   asset: AssetNode,  // For rendering individual assets/devices
-  group: GroupNode   // For rendering grouping containers
+  group: LabeledGroupNode   // For rendering grouping containers
 }
 
 // Initialize the service
@@ -44,12 +49,27 @@ const spaceBuilderService = new SpaceBuilderService()
  * - Collapsible sidebars for node management and properties
  */
 export function SpaceBuilder() {
+  return (
+    <ReactFlowProvider>
+      <SpaceBuilderContent />
+    </ReactFlowProvider>
+  )
+}
+
+/**
+ * SpaceBuilderContent contains the main implementation of the space builder functionality
+ * Separated from the provider wrapper to maintain clean component organization
+ */
+function SpaceBuilderContent() {
   // State management for nodes and edges using ReactFlow hooks
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   
   // Track currently selected node for property editing
   const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null)
+  
+  // Get ReactFlow instance to access viewport
+  const { getViewport, screenToFlowPosition } = useReactFlow()
   
   // Control sidebar visibility states
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
@@ -93,7 +113,7 @@ export function SpaceBuilder() {
     )
   }, [selectedNode, setNodes])
 
-  // Handle node selection
+  // Handle node selection and update last selected position
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNode(node)
     setRightSidebarOpen(true)
@@ -106,34 +126,44 @@ export function SpaceBuilder() {
 
   /**
    * Add a new node to the canvas
+   * Places new node at the center of the current viewport
    * @param typeId - The type identifier for the node (e.g., "router", "computer")
    * @param nodeType - Whether this is an "asset" or "group" node
    */
   const addNode = useCallback((typeId: string, nodeType: "asset" | "group") => {
+    // Get current viewport
+    const viewport = getViewport()
+    
+    // Calculate center of the screen in flow coordinates
+    const centerScreen = screenToFlowPosition({
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2
+    })
+
     const newNode: Node<NodeData> = {
       id: `${nodeType}-${Date.now()}`,
       type: nodeType,
-      position: { x: 100, y: 100 },
+      position: centerScreen,
       draggable: true,
       selectable: true,
       deletable: true,
+      // Set minimum dimensions for group nodes
+      ...(nodeType === 'group' && {
+        style: {
+          width: 300,
+          height: 200,
+          minWidth: 200,  // Minimum width
+          minHeight: 150  // Minimum height
+        }
+      }),
       data: { 
         label: nodeType === 'group' ? 'New Group' : typeId,
         typeId: typeId,
         type: nodeType,
         groupId: null
       },
-      // Configure node-type specific properties
       ...(nodeType === 'asset' && {
-        extent: 'parent'  // Assets can be contained within groups
-      }),
-      ...(nodeType === 'group' && {
-        style: {
-          width: 300,
-          height: 200,
-          padding: 20,
-          backgroundColor: 'rgba(240, 240, 240, 0.5)'
-        }
+        extent: 'parent'
       })
     }
     setNodes((nds) => {
@@ -142,7 +172,11 @@ export function SpaceBuilder() {
       spaceBuilderService.saveCanvasState('default', { nodes: newNodes, edges })
       return newNodes
     })
-  }, [edges, setNodes])
+
+    // Automatically select the new node and open right sidebar
+    setSelectedNode(newNode)
+    setRightSidebarOpen(true)
+  }, [edges, setNodes, getViewport, screenToFlowPosition, setSelectedNode, setRightSidebarOpen])
 
   /**
    * Update an existing node's properties
@@ -153,7 +187,7 @@ export function SpaceBuilder() {
       const newNodes = nds.map((node) => {
         if (node.id === updatedNode.id) {
           // Preserve existing node properties while updating with new values
-          return {
+          const updatedNodeData = {
             ...node,
             // Ensure parent relationship is properly set
             parentNode: updatedNode.parentNode,
@@ -161,6 +195,11 @@ export function SpaceBuilder() {
             extent: updatedNode.extent,
             // Update position if provided
             position: updatedNode.position || node.position,
+            // Preserve style
+            style: {
+              ...node.style,
+              ...updatedNode.style,
+            },
             data: {
               ...node.data,
               ...updatedNode.data,
@@ -168,9 +207,11 @@ export function SpaceBuilder() {
               parentId: updatedNode.data.parentId
             }
           }
+          return updatedNodeData
         }
         return node
       })
+
       // Save canvas state when nodes are updated
       spaceBuilderService.saveCanvasState('default', { nodes: newNodes, edges })
       return newNodes
@@ -259,6 +300,26 @@ export function SpaceBuilder() {
           snapToGrid={true} // Enable grid snapping for precise positioning
           snapGrid={[15, 15]} // Grid size for snapping
           selectNodesOnDrag={false} // Prevent node selection while dragging
+          // Enable node connection features
+          connectOnClick={true}
+          // Style the connection line while dragging
+          connectionLineStyle={{ stroke: '#999', strokeWidth: 2 }}
+          // Define valid connection rules
+          connectionMode={ConnectionMode.Loose}
+          // Only allow connections between group nodes
+          isValidConnection={(connection) => {
+            const sourceNode = nodes.find(n => n.id === connection.source)
+            const targetNode = nodes.find(n => n.id === connection.target)
+            return (
+              sourceNode?.type === 'group' && 
+              targetNode?.type === 'group' &&
+              // Prevent self-connections
+              connection.source !== connection.target &&
+              // Ensure proper handle types are connected
+              connection.sourceHandle === 'child-connector' &&
+              connection.targetHandle === 'parent-connector'
+            )
+          }}
         >
           <Controls /> {/* Zoom and pan controls */}
           <MiniMap /> {/* Overview map for navigation */}

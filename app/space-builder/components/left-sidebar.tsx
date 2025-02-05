@@ -104,11 +104,6 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
             </div>
             <span className="text-sm">
               {node.data.label}
-              {!isGroup && node.data.typeId && assetTypes[node.data.typeId] && (
-                <span className="text-xs text-gray-500 ml-1">
-                  ({assetTypes[node.data.typeId].name})
-                </span>
-              )}
             </span>
           </div>
           {isGroup && isExpanded && hasChildren && renderNodes(nodes, node.id, level + 1)}

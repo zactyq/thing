@@ -10,7 +10,7 @@ import type {
   AssetTypesResponse,
   CanvasStateResponse 
 } from '../types/space-builder'
-import { mockAssetTypes, defaultAssetTypes } from '../data/mock/asset-types'
+import { mockAssetTypes } from '../data/mock/asset-types'
 import { mockCanvasState } from '../data/mock/canvas-state'
 
 /**
@@ -21,6 +21,90 @@ interface ServiceConfig {
   baseUrl?: string;
   apiKey?: string;
 }
+
+const DEFAULT_ASSET_TYPES: AssetType[] = [
+  // Room Types
+  {
+    id: "office-room",
+    name: "Office Room",
+    icon: "Building",
+    description: "Individual or shared office space for staff members",
+    category: "Rooms",
+    isActive: true
+  },
+  {
+    id: "meeting-room",
+    name: "Meeting Room",
+    icon: "LayoutDashboard",
+    description: "Conference or meeting space with presentation facilities",
+    category: "Rooms",
+    isActive: true
+  },
+  {
+    id: "server-room",
+    name: "Server Room",
+    icon: "Server",
+    description: "Secure space for server and network infrastructure",
+    category: "Technical Spaces",
+    isActive: true
+  },
+  
+  // Access Points
+  {
+    id: "main-entrance",
+    name: "Main Entrance",
+    icon: "DoorOpen",
+    description: "Primary building entrance with access control",
+    category: "Access Points",
+    isActive: true
+  },
+  {
+    id: "secure-door",
+    name: "Secure Door",
+    icon: "DoorClosed",
+    description: "Access-controlled door with security clearance required",
+    category: "Access Points",
+    isActive: true
+  },
+  
+  // Network Infrastructure
+  {
+    id: "wifi-ap",
+    name: "WiFi Access Point",
+    icon: "Wifi",
+    description: "Wireless network access point",
+    category: "Network",
+    isActive: true
+  },
+  {
+    id: "network-cabinet",
+    name: "Network Cabinet",
+    icon: "Router",
+    description: "Network equipment and patch panel cabinet",
+    category: "Network",
+    isActive: true
+  },
+
+  // Security
+  {
+    id: "security-camera",
+    name: "Security Camera",
+    icon: "Camera",
+    description: "Surveillance camera with motion detection",
+    category: "Security",
+    isActive: true
+  },
+
+  // Monitoring
+  {
+    id: "environment-sensor",
+    name: "Environment Sensor",
+    icon: "Gauge",
+    description: "Multi-purpose environmental monitoring sensor",
+    category: "Sensors",
+    isActive: true
+  }
+]
 
 /**
  * Service class that handles all data operations for the space builder
@@ -48,7 +132,7 @@ export class SpaceBuilderService {
     // return response.json();
 
     // Currently returns mock data
-    return { assetTypes: [...mockAssetTypes, ...defaultAssetTypes] };
+    return { assetTypes: DEFAULT_ASSET_TYPES };
   }
 
   /**
@@ -129,7 +213,7 @@ export class SpaceBuilderService {
     // Currently just logs the update
     console.log(`Updating asset type ${id}:`, updates);
     return {
-      ...mockAssetTypes.find(asset => asset.id === id)!,
+      ...DEFAULT_ASSET_TYPES.find(asset => asset.id === id)!,
       ...updates
     };
   }

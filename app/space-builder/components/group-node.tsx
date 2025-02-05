@@ -38,7 +38,7 @@ interface LabeledGroupNodeProps {
 
 const GroupNode = memo(({ id, data, selected }: NodeProps<NodeData>) => {
   return (
-    <div className="bg-white/50 border-2 border-gray-200 rounded-lg p-4">
+    <div className="bg-white/50 border-2 border-gray-200 rounded-lg">
       <div className="font-medium text-sm text-gray-700">{data.label}</div>
     </div>
   )

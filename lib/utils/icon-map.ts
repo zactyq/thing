@@ -1,44 +1,49 @@
 /**
  * Centralized icon mapping for the application
  * This ensures consistent icon usage across components and provides type safety
+ * 
+ * Icons are specifically chosen for access control and room management functionality:
+ * - Building: Represents office rooms and general spaces
+ * - LayoutDashboard: Represents meeting rooms and conference spaces
+ * - Server: Represents server rooms and IT infrastructure
+ * - DoorClosed: Represents secure access-controlled doors
+ * - DoorOpen: Represents main entrances and emergency exits
+ * - Gauge: Represents environmental monitoring systems
+ * - Radio: Represents various types of sensors
+ * - KeyRound: Represents security access panels
+ * - Camera: Represents security cameras
+ * - Wifi: Represents network access points
+ * - Router: Represents network infrastructure
  */
 
 import {
-  Monitor,
-  Printer,
-  Router,
+  Building,
+  LayoutDashboard,
   Server,
-  Wifi,
   DoorClosed,
   DoorOpen,
-  Lightbulb,
-  Fan,
-  Thermometer,
-  LayoutDashboard,
-  Users,
-  Projector,
-  Camera,
+  Gauge,
   Radio,
+  KeyRound,
+  Camera,
+  Wifi,
+  Router,
   type LucideIcon
 } from "lucide-react"
 
-// Type-safe icon mapping
+// Type-safe icon mapping for access control and room management components
 const iconMap: Record<string, LucideIcon> = {
-  Monitor,
-  Printer,
-  Router,
+  Building,
+  LayoutDashboard,
   Server,
-  Wifi,
   DoorClosed,
   DoorOpen,
-  Lightbulb,
-  Fan,
-  Thermometer,
-  LayoutDashboard,
-  Users,
-  Projector,
+  Gauge,
+  Radio,
+  KeyRound,
   Camera,
-  Radio
+  Wifi,
+  Router
 }
 
 export { iconMap }

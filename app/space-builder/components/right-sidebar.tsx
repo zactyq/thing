@@ -3,7 +3,7 @@ import type { Node } from "reactflow"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, InfoIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, InfoIcon, Pencil } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Tooltip,
   TooltipContent,
@@ -28,6 +28,10 @@ const spaceBuilderService = new SpaceBuilderService()
  * Props for the RightSidebar component
  * @param selectedNode - Currently selected node in the flow editor, null if no selection
  * @param onUpdateNode - Callback function to update node properties when edited
+ * @param isOpen - Whether the sidebar is expanded
+ * @param onToggle - Function to toggle sidebar visibility
+ * @param nodes - All nodes in the flow editor
+ * @param onGroupChange - Callback for when a node's parent group changes
  */
 interface RightSidebarProps {
   selectedNode: Node<NodeData> | null
@@ -39,179 +43,241 @@ interface RightSidebarProps {
 }
 
 /**
- * RightSidebar component displays and allows editing of node properties
+ * RightSidebar Component
+ * Provides property editing and relationship management for selected nodes
+ * 
  * Features:
- * - Shows basic properties like label and type
- * - For asset nodes, allows assigning to a group via dropdown
- * - Collapsible interface for better space management
+ * - Node property editing (label, type)
+ * - Parent group selection via dropdown
+ * - Child nodes management and visualization
+ * - Collapsible sidebar with toggle
  */
-export function RightSidebar({ selectedNode, onUpdateNode, isOpen, onToggle, nodes }: RightSidebarProps) {
-  // Track all temporary changes
-  const [tempLabel, setTempLabel] = useState("")
-  const [tempTypeId, setTempTypeId] = useState("")
-  const [tempGroupId, setTempGroupId] = useState<string | null>(null)
-  const [assetTypes, setAssetTypes] = useState<AssetType[]>([])
+export function RightSidebar({
+  selectedNode,
+  onUpdateNode,
+  isOpen,
+  onToggle,
+  nodes,
+  onGroupChange,
+}: RightSidebarProps) {
+  // State for label editing
+  const [isEditingLabel, setIsEditingLabel] = useState(false)
+  const [labelValue, setLabelValue] = useState("")
+  const labelInputRef = useRef<HTMLInputElement>(null)
 
-  // Load asset types when component mounts
-  useEffect(() => {
-    const loadAssetTypes = async () => {
-      try {
-        const { assetTypes } = await spaceBuilderService.getAssetTypes()
-        setAssetTypes(assetTypes)
-      } catch (error) {
-        console.error('Failed to load asset types:', error)
-      }
-    }
-    loadAssetTypes()
-  }, [])
-
-  // Initialize temp values when selectedNode changes
+  // Update label value when selected node changes
   useEffect(() => {
     if (selectedNode) {
-      setTempLabel(selectedNode.data.label || '')
-      setTempTypeId(selectedNode.data.typeId || '')
-      setTempGroupId(selectedNode.data.groupId || null)
+      setLabelValue(selectedNode.data.label)
+      setIsEditingLabel(false)
     }
   }, [selectedNode])
 
-  const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTempLabel(e.target.value)
-  }
-
-  const handleTypeChange = (value: string) => {
-    setTempTypeId(value)
-  }
-
-  const handleGroupChange = (value: string) => {
-    setTempGroupId(value === 'none' ? null : value)
-  }
-
-  // Save all changes at once with proper nesting
-  const handleSaveChanges = () => {
-    if (selectedNode) {
+  // Handle label save
+  const handleLabelSave = () => {
+    if (selectedNode && labelValue.trim() !== "") {
       const updatedNode = {
         ...selectedNode,
-        parentNode: tempGroupId || undefined,
-        extent: tempGroupId ? ('parent' as const) : undefined,
-        position: tempGroupId ? { x: 50, y: 50 } : selectedNode.position,
-        data: {
-          ...selectedNode.data,
-          label: tempLabel,
-          typeId: tempTypeId,
-          groupId: tempGroupId,
-          parentId: tempGroupId || undefined
+        data: { 
+          ...selectedNode.data, 
+          label: labelValue.trim() 
         },
       }
       onUpdateNode(updatedNode)
+      setIsEditingLabel(false)
+    } else {
+      // If empty, revert to original value
+      setLabelValue(selectedNode?.data.label || "")
+      setIsEditingLabel(false)
     }
   }
 
-  // Reset all temp values to current node values
-  const handleCancel = () => {
-    if (selectedNode) {
-      setTempLabel(selectedNode.data.label || '')
-      setTempTypeId(selectedNode.data.typeId || '')
-      setTempGroupId(selectedNode.data.groupId || null)
+  // Handle label edit key press
+  const handleLabelKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault() // Prevent form submission
+      handleLabelSave()
+    } else if (e.key === "Escape") {
+      e.preventDefault() // Prevent any default behavior
+      setLabelValue(selectedNode?.data.label || "")
+      setIsEditingLabel(false)
     }
   }
 
-  // Filter for active asset types only
-  const availableAssetTypes = assetTypes.filter(asset => asset.isActive)
+  // Handle clicking outside of the input
+  const handleBlur = () => {
+    handleLabelSave()
+  }
+
+  // Early return for collapsed state
+  if (!isOpen) {
+    return (
+      <button
+        onClick={onToggle}
+        className="absolute right-0 top-4 bg-white p-2 rounded-l-md shadow-md"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+    )
+  }
+
+  // Get all available group nodes for parent selection
+  // Filter out the current node (to prevent self-selection) and any descendant groups
+  // to prevent circular relationships
+  const getAvailableParentGroups = (currentNode: Node<NodeData>) => {
+    const isDescendantOf = (node: Node<NodeData>, potentialAncestorId: string): boolean => {
+      if (!node.parentNode) return false
+      if (node.parentNode === potentialAncestorId) return true
+      const parentNode = nodes.find(n => n.id === node.parentNode)
+      return parentNode ? isDescendantOf(parentNode, potentialAncestorId) : false
+    }
+
+    return nodes.filter(node => 
+      node.type === 'group' && 
+      node.id !== currentNode.id && 
+      !isDescendantOf(node, currentNode.id)
+    )
+  }
+
+  // Get current parent and children relationships
+  const parentNode = selectedNode?.parentNode 
+    ? nodes.find(node => node.id === selectedNode.parentNode)
+    : null
+
+  const childNodes = nodes.filter(node => 
+    node.parentNode === selectedNode?.id
+  )
 
   return (
-    <div className={`bg-gray-100 p-4 transition-all duration-300 ease-in-out ${isOpen ? "w-64" : "w-12"}`}>
-      <div className="flex justify-between items-center mb-6">
-        {isOpen && <h2 className="text-2xl font-semibold">Properties</h2>}
-        <Button variant="ghost" size="icon" onClick={onToggle}>
-          {isOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-      </div>
+    <div className="w-80 bg-white border-l border-gray-200 p-4 relative">
+      <button
+        onClick={onToggle}
+        className="absolute left-0 top-4 -translate-x-full bg-white p-2 rounded-l-md shadow-md"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
 
-      {isOpen && selectedNode && (
-        <div className="flex flex-col h-[calc(100vh-8rem)]">
-          <div className="flex-grow space-y-6 overflow-y-auto pb-6">
+      {selectedNode ? (
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold">Properties</h2>
+          
+          {/* Basic Properties */}
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="label" className="text-base font-normal">Label</Label>
-              <Input 
-                id="label" 
-                name="label" 
-                value={tempLabel} 
-                onChange={handleLabelChange}
-              />
+              <Label htmlFor="node-label">Label</Label>
+              <div className="relative">
+                {isEditingLabel ? (
+                  <Input
+                    ref={labelInputRef}
+                    id="node-label"
+                    value={labelValue}
+                    onChange={(e) => setLabelValue(e.target.value)}
+                    onBlur={handleBlur}
+                    onKeyDown={handleLabelKeyPress}
+                    className="pr-8"
+                    autoFocus
+                  />
+                ) : (
+                  <div 
+                    className="flex items-center justify-between p-2 border rounded-md hover:border-input cursor-pointer group"
+                    onClick={() => {
+                      setIsEditingLabel(true)
+                      setLabelValue(selectedNode?.data.label || "")
+                      // Focus the input after a short delay to ensure it's mounted
+                      setTimeout(() => labelInputRef.current?.focus(), 0)
+                    }}
+                  >
+                    <span>{selectedNode?.data.label}</span>
+                    <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                )}
+              </div>
             </div>
-            
-            {selectedNode.type === 'asset' && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="type" className="text-base font-normal">Type</Label>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <InfoIcon className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Add new asset types using the reference manager</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+
+            {/* Parent Group Selection */}
+            <div className="space-y-2">
+              <Label>Parent Group</Label>
+              <Select
+                value={parentNode?.id || "none"}
+                onValueChange={(value) => onGroupChange(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select parent group" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {getAvailableParentGroups(selectedNode).map(node => (
+                    <SelectItem key={node.id} value={node.id}>
+                      {node.data.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Child Nodes Display */}
+            <div className="space-y-2">
+              <Label>Child Nodes</Label>
+              {childNodes.length > 0 ? (
+                <div className="border rounded-md divide-y">
+                  {childNodes.map(child => (
+                    <div 
+                      key={child.id} 
+                      className="p-2 flex justify-between items-center hover:bg-gray-50"
+                    >
+                      <div>
+                        <div className="font-medium">{child.data.label}</div>
+                        <div className="text-sm text-gray-500">
+                          {child.type === 'group' ? 'Group' : 'Asset'}
+                        </div>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onGroupChange("none")}
+                            >
+                              Remove
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Remove from group</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  ))}
                 </div>
-                <Select
-                  value={tempTypeId}
-                  onValueChange={handleTypeChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableAssetTypes.map((assetType) => (
-                      <SelectItem key={assetType.id} value={assetType.id}>
-                        {assetType.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+              ) : (
+                <div className="text-sm text-gray-500 italic border rounded-md p-3">
+                  No child nodes
+                </div>
+              )}
+            </div>
 
-            {selectedNode.type === 'asset' && (
-              <div className="space-y-2">
-                <Label htmlFor="group" className="text-base font-normal">Group</Label>
-                <Select
-                  value={tempGroupId || 'none'}
-                  onValueChange={handleGroupChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a group" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Group</SelectItem>
-                    {nodes.filter(node => node.type === 'group').map((group) => (
-                      <SelectItem key={group.id} value={group.id}>
-                        {group.data.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Node Type Information */}
+            <div className="pt-4 border-t">
+              <div className="text-sm text-gray-500 space-y-1">
+                <div className="flex items-center gap-1">
+                  <span>Type:</span>
+                  <span className="font-medium">{selectedNode.type}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>ID:</span>
+                  <span className="font-mono text-xs">{selectedNode.id}</span>
+                </div>
               </div>
-            )}
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4 pb-4 border-t bg-gray-100 mt-auto sticky bottom-0">
-            <Button 
-              variant="outline" 
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSaveChanges}
-            >
-              Save
-            </Button>
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="text-gray-500 italic flex items-center gap-2">
+          <InfoIcon className="h-4 w-4" />
+          <span>Select a node to edit its properties</span>
+        </div>
       )}
-      {isOpen && !selectedNode && <p>Select a node to view and edit its properties.</p>}
     </div>
   )
 }
