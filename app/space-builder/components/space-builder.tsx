@@ -67,7 +67,7 @@ function SpaceBuilderContent() {
   const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null)
   
   // Get ReactFlow instance to access viewport
-  const { getViewport, screenToFlowPosition } = useReactFlow()
+  const { screenToFlowPosition } = useReactFlow()
   
   // Control sidebar visibility states
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
