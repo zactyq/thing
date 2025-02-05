@@ -10,7 +10,6 @@ import type {
   AssetTypesResponse,
   CanvasStateResponse 
 } from '../types/space-builder'
-import { mockAssetTypes } from '../data/mock/asset-types'
 import { mockCanvasState } from '../data/mock/canvas-state'
 
 /**

@@ -18,11 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { SpaceBuilderService } from "@/lib/services/space-builder-service"
-import type { AssetType, NodeData } from "@/lib/types/space-builder"
-
-// Initialize service
-const spaceBuilderService = new SpaceBuilderService()
+import type { NodeData } from "@/lib/types/space-builder"
 
 /**
  * Props for the RightSidebar component

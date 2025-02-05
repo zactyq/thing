@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useCallback, useEffect, useRef } from "react"
+import { useState, useCallback, useEffect } from "react"
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -16,7 +16,6 @@ import ReactFlow, {
   type NodeTypes,
   useReactFlow,
   ReactFlowProvider,
-  type NodeDragHandler,
   ConnectionMode,
 } from "reactflow"
 import "reactflow/dist/style.css"
@@ -24,10 +23,9 @@ import { LeftSidebar } from "./left-sidebar"
 import { RightSidebar } from "./right-sidebar"
 import { FloatingPalette } from "./floating-palette"
 import AssetNode from "./asset-node"
-import GroupNode from './group-node'
-import { SpaceBuilderService } from "@/lib/services/space-builder-service"
 import type { NodeData } from "@/lib/types/space-builder"
 import { LabeledGroupNode } from "@/components/labeled-group-node"
+import { SpaceBuilderService } from "@/lib/services/space-builder-service"
 
 // Define custom node types that can be rendered in the flow
 const nodeTypes: NodeTypes = {
@@ -79,7 +77,7 @@ function SpaceBuilderContent() {
   useEffect(() => {
     const loadCanvasState = async () => {
       try {
-        const { canvasState } = await spaceBuilderService.getCanvasState('default')
+        const { canvasState } = await spaceBuilderService.getCanvasState() // Remove 'default' parameter
         setNodes(canvasState.nodes)
         setEdges(canvasState.edges)
       } catch (error) {
@@ -131,9 +129,6 @@ function SpaceBuilderContent() {
    * @param nodeType - Whether this is an "asset" or "group" node
    */
   const addNode = useCallback((typeId: string, nodeType: "asset" | "group") => {
-    // Get current viewport
-    const viewport = getViewport()
-    
     // Calculate center of the screen in flow coordinates
     const centerScreen = screenToFlowPosition({
       x: window.innerWidth / 2,
@@ -176,7 +171,7 @@ function SpaceBuilderContent() {
     // Automatically select the new node and open right sidebar
     setSelectedNode(newNode)
     setRightSidebarOpen(true)
-  }, [edges, setNodes, getViewport, screenToFlowPosition, setSelectedNode, setRightSidebarOpen])
+  }, [edges, setNodes, screenToFlowPosition, setSelectedNode, setRightSidebarOpen])
 
   /**
    * Update an existing node's properties

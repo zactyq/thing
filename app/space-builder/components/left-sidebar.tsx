@@ -24,8 +24,7 @@ const spaceBuilderService = new SpaceBuilderService()
  */
 export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelect }: LeftSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-  const [icons, setIcons] = useState<Record<string, LucideIcon>>({})
-  const [assetTypes, setAssetTypes] = useState<Record<string, any>>({})
+  const [assetTypes, setAssetTypes] = useState<Record<string, { id: string; icon: string }>>({})
 
   // Load asset types and their icons when component mounts
   useEffect(() => {
@@ -111,11 +110,6 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
       )
     })
   }
-
-  const onDragStart = (event: React.DragEvent, nodeType: string) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
-    event.dataTransfer.effectAllowed = 'move';
-  };
 
   return (
     <div 
