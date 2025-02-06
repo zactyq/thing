@@ -75,8 +75,21 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
     return null
   }
 
+  // Early return for collapsed state
+  if (!isOpen) {
+    return (
+      <div className="absolute left-0 top-[57px] z-50">
+        <button
+          onClick={onToggle}
+          className="absolute left-0 top-4 bg-white p-2 rounded-r-md shadow-md"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    )
+  }
+
   const renderNodes = (nodes: Node<NodeData>[], parentId: string | null = null, level = 0) => {
-    // Filter nodes that belong to this level
     const levelNodes = nodes.filter(node => 
       parentId === null ? !node.parentNode : node.parentNode === parentId
     )
@@ -91,8 +104,8 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
       return (
         <div key={node.id} style={{ marginLeft: `${level * 16}px` }}>
           <div 
-            className={`flex items-center py-1 px-2 hover:bg-gray-200 rounded-md cursor-pointer group
-              ${isSelected ? 'bg-gray-200' : ''}`}
+            className={`flex items-center py-2 px-3 hover:bg-gray-50 cursor-pointer
+              ${isSelected ? 'bg-gray-50' : ''}`}
             onClick={() => onNodeSelect(node)}
           >
             <div 
@@ -101,7 +114,7 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
             >
               {Icon && <Icon className="h-4 w-4 mr-2" />}
             </div>
-            <span className="text-sm">
+            <span className="text-sm font-medium">
               {node.data.label}
             </span>
           </div>
@@ -112,27 +125,26 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
   }
 
   return (
-    <div 
-      className={`bg-gray-100 transition-all duration-300 ease-in-out ${
-        isOpen ? "w-64" : "w-12"
-      }`}
-    >
-      <div className="flex justify-between items-center p-4">
-        {isOpen && <h2 className="text-xl font-semibold">Structure</h2>}
-        <Button variant="ghost" size="icon" onClick={onToggle}>
-          {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </Button>
-      </div>
-      {isOpen && (
-        <div className="px-2 py-2">
+    <div className="w-80 bg-white border-r border-gray-200 p-4 relative z-40">
+      <button
+        onClick={onToggle}
+        className="absolute left-full top-4 bg-white p-2 rounded-r-md shadow-md z-50"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+
+      <div className="space-y-6">
+        <h2 className="text-lg font-semibold">Structure</h2>
+        
+        <div className="border rounded-md divide-y">
           {renderNodes(nodes)}
           {nodes.length === 0 && (
-            <div className="text-sm text-gray-500 p-2">
+            <div className="text-sm text-gray-500 italic p-3">
               No nodes available
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

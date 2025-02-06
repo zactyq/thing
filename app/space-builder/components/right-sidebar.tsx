@@ -108,12 +108,14 @@ export function RightSidebar({
   // Early return for collapsed state
   if (!isOpen) {
     return (
-      <button
-        onClick={onToggle}
-        className="absolute right-0 top-4 bg-white p-2 rounded-l-md shadow-md"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
+      <div className="absolute right-0 top-[57px] z-50">
+        <button
+          onClick={onToggle}
+          className="absolute right-0 top-4 bg-white p-2 rounded-l-md shadow-md"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+      </div>
     )
   }
 
@@ -145,10 +147,10 @@ export function RightSidebar({
   )
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 p-4 relative">
+    <div className="w-80 bg-white border-l border-gray-200 p-4 relative z-40">
       <button
         onClick={onToggle}
-        className="absolute left-0 top-4 -translate-x-full bg-white p-2 rounded-l-md shadow-md"
+        className="absolute right-full top-4 bg-white p-2 rounded-l-md shadow-md z-50"
       >
         <ChevronRight className="h-4 w-4" />
       </button>
