@@ -6,6 +6,7 @@
 
 import type { Node, Edge } from 'reactflow'
 import type { IconName } from '../utils/icon-map'
+import type { FunctionConfig } from "@/app/space-builder/components/add-function-modal"
 
 /**
  * Represents a category of asset that can be placed in the space builder
@@ -30,6 +31,7 @@ export interface NodeData {
   groupId: string | null;  // ID of the parent group, if any
   type?: "asset" | "group"; // Discriminator for node type
   parentId?: string;       // ID of the parent node (for hierarchical relationships)
+  functions?: FunctionConfig[]  // Array of configured functions for this node
 }
 
 /**

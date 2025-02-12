@@ -3,7 +3,7 @@ import type { Node } from "reactflow"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, InfoIcon, Pencil } from "lucide-react"
+import { ChevronLeft, ChevronRight, InfoIcon, Pencil, SquareAsterisk } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -19,6 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import type { NodeData } from "@/lib/types/space-builder"
+import { AddFunctionModal, type FunctionConfig } from "./add-function-modal"
 
 /**
  * Props for the RightSidebar component
@@ -60,6 +61,7 @@ export function RightSidebar({
   const [isEditingLabel, setIsEditingLabel] = useState(false)
   const [labelValue, setLabelValue] = useState("")
   const labelInputRef = useRef<HTMLInputElement>(null)
+  const [isAddFunctionModalOpen, setIsAddFunctionModalOpen] = useState(false)
 
   // Update label value when selected node changes
   useEffect(() => {
@@ -103,6 +105,34 @@ export function RightSidebar({
   // Handle clicking outside of the input
   const handleBlur = () => {
     handleLabelSave()
+  }
+
+  // Handle adding a new function to the node
+  const handleAddFunction = (functionConfig: FunctionConfig) => {
+    if (selectedNode) {
+      const updatedNode = {
+        ...selectedNode,
+        data: {
+          ...selectedNode.data,
+          functions: [...(selectedNode.data.functions || []), functionConfig]
+        }
+      }
+      onUpdateNode(updatedNode)
+    }
+  }
+
+  // Handle removing a function from the node
+  const handleRemoveFunction = (index: number) => {
+    if (selectedNode) {
+      const updatedNode = {
+        ...selectedNode,
+        data: {
+          ...selectedNode.data,
+          functions: (selectedNode.data.functions || []).filter((_, i) => i !== index)
+        }
+      }
+      onUpdateNode(updatedNode)
+    }
   }
 
   // Early return for collapsed state
@@ -255,6 +285,53 @@ export function RightSidebar({
               )}
             </div>
 
+            {/* Functions Section */}
+            <div className="space-y-2">
+              <Label>Functions</Label>
+              <div className="space-y-2">
+                {/* List of configured functions */}
+                {selectedNode.data.functions?.map((func, index) => (
+                  <div 
+                    key={index}
+                    className="p-2 flex justify-between items-center border rounded-md hover:bg-gray-50"
+                  >
+                    <div>
+                      <div className="font-medium">{func.type}</div>
+                      <div className="text-sm text-gray-500">
+                        ID: {func.pairingId}
+                      </div>
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveFunction(index)}
+                          >
+                            Remove
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Remove function</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ))}
+
+                {/* Add function button */}
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsAddFunctionModalOpen(true)}
+                >
+                  <SquareAsterisk className="h-4 w-4 mr-2" />
+                  Add Function
+                </Button>
+              </div>
+            </div>
+
             {/* Node Type Information */}
             <div className="pt-4 border-t">
               <div className="text-sm text-gray-500 space-y-1">
@@ -276,6 +353,13 @@ export function RightSidebar({
           <span>Select a node to edit its properties</span>
         </div>
       )}
+
+      {/* Add Function Modal */}
+      <AddFunctionModal
+        isOpen={isAddFunctionModalOpen}
+        onClose={() => setIsAddFunctionModalOpen(false)}
+        onSave={handleAddFunction}
+      />
     </div>
   )
 }

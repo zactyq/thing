@@ -1,6 +1,5 @@
 import type { Node } from "reactflow"
 import { ChevronLeft, ChevronRight, Folder, FolderOpen } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import type { NodeData } from "@/lib/types/space-builder"
 import { SpaceBuilderService } from "@/lib/services/space-builder-service"
