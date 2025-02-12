@@ -1,8 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from "@/components/ui/button"
 
 interface LeftSidebarProps {
   isOpen: boolean
@@ -10,10 +8,10 @@ interface LeftSidebarProps {
 }
 
 /**
- * LeftSidebar Component for Reference Manager
+ * LeftSidebar Component for Process Builder
  * 
- * A collapsible sidebar that provides navigation and management
- * of references and reference categories. When collapsed, it maintains
+ * A collapsible sidebar that provides access to process nodes,
+ * flow controls, and workflow templates. When collapsed, it maintains
  * minimal visual presence while still providing access to core
  * functionality through icons.
  * 
@@ -46,15 +44,15 @@ export function LeftSidebar({ isOpen, onToggle }: LeftSidebarProps) {
       </button>
 
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold">References</h2>
+        <h2 className="text-lg font-semibold">Process Nodes</h2>
         
         <div className="border rounded-md divide-y">
-          {/* Reference list will go here */}
+          {/* Process node list will go here */}
           <div className="text-sm text-gray-500 italic p-3">
-            No references available
+            No process nodes available
           </div>
         </div>
       </div>
     </div>
   )
-}
+} 

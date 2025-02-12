@@ -1,8 +1,7 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface LeftSidebarProps {
   isOpen: boolean
@@ -10,10 +9,10 @@ interface LeftSidebarProps {
 }
 
 /**
- * LeftSidebar Component for Reference Manager
+ * LeftSidebar Component for Teams Manager
  * 
  * A collapsible sidebar that provides navigation and management
- * of references and reference categories. When collapsed, it maintains
+ * of teams and team-related functions. When collapsed, it maintains
  * minimal visual presence while still providing access to core
  * functionality through icons.
  * 
@@ -46,15 +45,15 @@ export function LeftSidebar({ isOpen, onToggle }: LeftSidebarProps) {
       </button>
 
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold">References</h2>
+        <h2 className="text-lg font-semibold">Teams</h2>
         
         <div className="border rounded-md divide-y">
-          {/* Reference list will go here */}
+          {/* Team list will go here */}
           <div className="text-sm text-gray-500 italic p-3">
-            No references available
+            No teams available
           </div>
         </div>
       </div>
     </div>
   )
-}
+} 

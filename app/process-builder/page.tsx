@@ -1,17 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { LeftSidebar } from './components/left-sidebar'
-import { RightSidebar } from './components/right-sidebar'
+import { LeftSidebar } from '../process-builder/components/left-sidebar'
+import { RightSidebar } from '../process-builder/components/right-sidebar'
 
 /**
- * ReferenceManager Page Component
+ * ProcessBuilder Page Component
  * 
- * The main container for the reference management interface.
- * Manages the state of both sidebars and provides the main content area.
- * Layout follows the same pattern as other manager pages for consistency.
+ * The main container for the process flow building interface.
+ * Manages the state of both sidebars and provides the main canvas area
+ * for process flow design and configuration.
+ * Layout follows the same pattern as other builder pages for consistency.
  */
-export default function ReferenceManagerPage() {
+export default function ProcessBuilderPage() {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true)
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true)
 
@@ -26,7 +27,7 @@ export default function ReferenceManagerPage() {
         <main className="flex-1 overflow-hidden">
           <div className="h-full w-full bg-background/50 p-4">
             <div className="flex h-full items-center justify-center text-muted-foreground">
-              Reference Manager Content
+              Process Builder Canvas
             </div>
           </div>
         </main>
@@ -38,4 +39,4 @@ export default function ReferenceManagerPage() {
       </div>
     </div>
   )
-}
+} 

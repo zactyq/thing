@@ -1,8 +1,7 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight, InfoIcon } from 'lucide-react'
-import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight, InfoIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface RightSidebarProps {
   isOpen: boolean
@@ -10,11 +9,12 @@ interface RightSidebarProps {
 }
 
 /**
- * RightSidebar Component for Reference Manager
+ * RightSidebar Component for Teams Manager
  * 
  * A collapsible sidebar that displays detailed information and settings
- * for the currently selected reference. When collapsed, it preserves
- * screen space while maintaining accessibility through a toggle button.
+ * for the currently selected team or team member. When collapsed, it
+ * preserves screen space while maintaining accessibility through a
+ * toggle button.
  * 
  * Props:
  * @param isOpen - Controls the expanded/collapsed state of the sidebar
@@ -45,13 +45,13 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
       </button>
 
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold">Details</h2>
+        <h2 className="text-lg font-semibold">Properties</h2>
         
         <div className="text-gray-500 italic flex items-center gap-2">
           <InfoIcon className="h-4 w-4" />
-          <span>Select a reference to view details</span>
+          <span>Select a team to edit its properties</span>
         </div>
       </div>
     </div>
   )
-}
+} 

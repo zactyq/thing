@@ -18,6 +18,11 @@ import {
 const navItems = [
   {
     href: "/",
+    icon: () => <span className="font-mono font-black text-lg text-green-500">[ ]</span>,
+    label: "",
+  },
+  {
+    href: "/",
     icon: Network,
     label: "Space Builder",
   },

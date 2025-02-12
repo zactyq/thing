@@ -1,8 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import { ChevronLeft, ChevronRight, InfoIcon } from 'lucide-react'
-import { Button } from "@/components/ui/button"
 
 interface RightSidebarProps {
   isOpen: boolean
@@ -10,10 +8,10 @@ interface RightSidebarProps {
 }
 
 /**
- * RightSidebar Component for Reference Manager
+ * RightSidebar Component for Process Builder
  * 
- * A collapsible sidebar that displays detailed information and settings
- * for the currently selected reference. When collapsed, it preserves
+ * A collapsible sidebar that displays configuration options and properties
+ * for the currently selected process node. When collapsed, it preserves
  * screen space while maintaining accessibility through a toggle button.
  * 
  * Props:
@@ -45,13 +43,13 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
       </button>
 
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold">Details</h2>
+        <h2 className="text-lg font-semibold">Properties</h2>
         
         <div className="text-gray-500 italic flex items-center gap-2">
           <InfoIcon className="h-4 w-4" />
-          <span>Select a reference to view details</span>
+          <span>Select a process node to configure</span>
         </div>
       </div>
     </div>
   )
-}
+} 

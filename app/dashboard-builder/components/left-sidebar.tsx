@@ -1,8 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from "@/components/ui/button"
 
 interface LeftSidebarProps {
   isOpen: boolean
@@ -10,12 +8,12 @@ interface LeftSidebarProps {
 }
 
 /**
- * LeftSidebar Component for Reference Manager
+ * LeftSidebar Component for Dashboard Builder
  * 
- * A collapsible sidebar that provides navigation and management
- * of references and reference categories. When collapsed, it maintains
- * minimal visual presence while still providing access to core
- * functionality through icons.
+ * A collapsible sidebar that provides access to dashboard widgets,
+ * templates, and layout tools. When collapsed, it maintains minimal
+ * visual presence while still providing access to core functionality
+ * through icons.
  * 
  * Props:
  * @param isOpen - Controls the expanded/collapsed state of the sidebar
@@ -46,15 +44,15 @@ export function LeftSidebar({ isOpen, onToggle }: LeftSidebarProps) {
       </button>
 
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold">References</h2>
+        <h2 className="text-lg font-semibold">Widgets</h2>
         
         <div className="border rounded-md divide-y">
-          {/* Reference list will go here */}
+          {/* Widget list will go here */}
           <div className="text-sm text-gray-500 italic p-3">
-            No references available
+            No widgets available
           </div>
         </div>
       </div>
     </div>
   )
-}
+} 
