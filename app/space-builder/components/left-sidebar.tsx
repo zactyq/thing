@@ -1,10 +1,25 @@
 import type { Node } from "reactflow"
-import { ChevronLeft, ChevronRight, Folder, FolderOpen } from "lucide-react"
+import { ChevronLeft, ChevronRight, Folder, FolderOpen, Check, ChevronsUpDown } from "lucide-react"
 import { useState, useEffect } from "react"
 import type { NodeData } from "@/lib/types/space-builder"
 import { SpaceBuilderService } from "@/lib/services/space-builder-service"
 import { iconMap } from "@/lib/utils/icon-map"
 import type { LucideIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface LeftSidebarProps {
   nodes: Node<NodeData>[]
@@ -17,6 +32,30 @@ interface LeftSidebarProps {
 // Initialize service
 const spaceBuilderService = new SpaceBuilderService()
 
+// Define frameworks data for the combobox
+const frameworks = [
+  {
+    value: "next.js",
+    label: "Next.js",
+  },
+  {
+    value: "sveltekit",
+    label: "SvelteKit",
+  },
+  {
+    value: "nuxt.js",
+    label: "Nuxt.js",
+  },
+  {
+    value: "remix",
+    label: "Remix",
+  },
+  {
+    value: "astro",
+    label: "Astro",
+  },
+]
+
 /**
  * LeftSidebar component displays a hierarchical view of nodes and groups
  * Similar to a file manager interface, showing groups as folders and nodes as files
@@ -24,6 +63,8 @@ const spaceBuilderService = new SpaceBuilderService()
 export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelect }: LeftSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [assetTypes, setAssetTypes] = useState<Record<string, { id: string; icon: string }>>({})
+  const [open, setOpen] = useState(false)
+  const [value, setValue] = useState("")
 
   // Load asset types and their icons when component mounts
   useEffect(() => {
@@ -133,7 +174,49 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
       </button>
 
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold">Structure</h2>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-[200px] justify-between"
+            >
+              {value
+                ? frameworks.find((framework) => framework.value === value)?.label
+                : "Select framework..."}
+              <ChevronsUpDown className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              <CommandInput placeholder="Search framework..." className="h-9" />
+              <CommandList>
+                <CommandEmpty>No framework found.</CommandEmpty>
+                <CommandGroup>
+                  {frameworks.map((framework) => (
+                    <CommandItem
+                      key={framework.value}
+                      value={framework.value}
+                      onSelect={(currentValue) => {
+                        setValue(currentValue === value ? "" : currentValue)
+                        setOpen(false)
+                      }}
+                    >
+                      {framework.label}
+                      <Check
+                        className={cn(
+                          "ml-auto",
+                          value === framework.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
         
         <div className="border rounded-md divide-y">
           {renderNodes(nodes)}

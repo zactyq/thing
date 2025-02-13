@@ -245,7 +245,7 @@ export function RightSidebar({
 
             {/* Child Nodes Display */}
             <div className="space-y-2">
-              <Label>Child Nodes</Label>
+              <Label>Resources</Label>
               {childNodes.length > 0 ? (
                 <div className="border rounded-md divide-y">
                   {childNodes.map(child => (
@@ -280,7 +280,7 @@ export function RightSidebar({
                 </div>
               ) : (
                 <div className="text-sm text-gray-500 italic border rounded-md p-3">
-                  No child nodes
+                  No resources
                 </div>
               )}
             </div>

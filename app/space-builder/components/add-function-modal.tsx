@@ -23,7 +23,8 @@ const AVAILABLE_FUNCTIONS = [
   { id: 'aws-mqtt', name: 'AWS MQTT' },
   { id: 'mqtt', name: 'MQTT' },
   { id: 'refera-nig', name: 'Refera NIG' },
-  { id: 'tuya', name: 'Tuya' }
+  { id: 'tuya', name: 'Tuya' },
+  { id: 'charger-control', name: 'Charger Control' }
 ] as const
 
 // Type for the function configuration
