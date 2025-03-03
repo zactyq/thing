@@ -22,6 +22,7 @@ import "reactflow/dist/style.css"
 import { LeftSidebar } from "./left-sidebar"
 import { RightSidebar } from "./right-sidebar"
 import { FloatingPalette } from "./floating-palette"
+import { ProjectManager } from "./project-manager"
 import AssetNode from "./asset-node"
 import type { NodeData } from "@/lib/types/space-builder"
 import { LabeledGroupNode } from "@/components/labeled-group-node"
@@ -45,6 +46,7 @@ const spaceBuilderService = new SpaceBuilderService()
  * - Minimap for navigation
  * - Zoom and pan controls
  * - Collapsible sidebars for node management and properties
+ * - Project saving and loading via localStorage
  */
 export function SpaceBuilder() {
   return (
@@ -72,30 +74,58 @@ function SpaceBuilderContent() {
   // Control sidebar visibility states
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true)
+  
+  // Track current project ID
+  const [currentProjectId, setCurrentProjectId] = useState(`default-${Date.now()}`)
 
   // Load initial canvas state
   useEffect(() => {
     const loadCanvasState = async () => {
       try {
-        const { canvasState } = await spaceBuilderService.getCanvasState() // Remove 'default' parameter
-        setNodes(canvasState.nodes)
-        setEdges(canvasState.edges)
+        // Load the list of projects to check if any exist
+        const projectsList = spaceBuilderService.getProjectsList();
+        
+        // If projects exist, load the most recently modified one
+        if (projectsList.length > 0) {
+          // Sort by last modified descending
+          const sortedProjects = [...projectsList].sort(
+            (a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+          );
+          
+          const lastProject = sortedProjects[0];
+          const { canvasState } = await spaceBuilderService.getCanvasState(lastProject.id);
+          setNodes(canvasState.nodes);
+          setEdges(canvasState.edges);
+          setCurrentProjectId(lastProject.id);
+          console.log(`Loaded most recent project: ${lastProject.name}`);
+        } else {
+          // If no projects exist, load the mock data
+          const { canvasState } = await spaceBuilderService.getCanvasState();
+          setNodes(canvasState.nodes);
+          setEdges(canvasState.edges);
+          
+          // Save this as the first project
+          spaceBuilderService.saveCanvasState(currentProjectId, canvasState, {
+            name: "Default Project",
+            description: "Automatically created project"
+          });
+        }
       } catch (error) {
         console.error('Failed to load canvas state:', error)
       }
     }
     loadCanvasState()
-  }, [setNodes, setEdges])
+  }, [setNodes, setEdges, currentProjectId])
 
   // Handle new connections between nodes
   const onConnect = useCallback((params: Edge | Connection) => {
     setEdges((eds) => {
       const newEdges = addEdge(params, eds)
       // Save canvas state when connections change
-      spaceBuilderService.saveCanvasState('default', { nodes, edges: newEdges })
+      spaceBuilderService.saveCanvasState(currentProjectId, { nodes, edges: newEdges })
       return newEdges
     })
-  }, [nodes, setEdges])
+  }, [nodes, setEdges, currentProjectId])
 
   // Update node styling when selection changes
   useEffect(() => {
@@ -129,11 +159,15 @@ function SpaceBuilderContent() {
    * @param nodeType - Whether this is an "asset" or "group" node
    */
   const addNode = useCallback((typeId: string, nodeType: "asset" | "group") => {
+    console.log("Adding node:", typeId, nodeType);
+    
     // Calculate center of the screen in flow coordinates
     const centerScreen = screenToFlowPosition({
       x: window.innerWidth / 2,
       y: window.innerHeight / 2
     })
+    
+    console.log("Center position:", centerScreen);
 
     const newNode: Node<NodeData> = {
       id: `${nodeType}-${Date.now()}`,
@@ -161,17 +195,20 @@ function SpaceBuilderContent() {
         extent: 'parent'
       })
     }
+    
+    console.log("New node:", newNode);
+    
     setNodes((nds) => {
       const newNodes = nds.concat(newNode)
       // Save canvas state when nodes change
-      spaceBuilderService.saveCanvasState('default', { nodes: newNodes, edges })
+      spaceBuilderService.saveCanvasState(currentProjectId, { nodes: newNodes, edges })
       return newNodes
     })
 
     // Automatically select the new node and open right sidebar
     setSelectedNode(newNode)
     setRightSidebarOpen(true)
-  }, [edges, setNodes, screenToFlowPosition, setSelectedNode, setRightSidebarOpen])
+  }, [edges, setNodes, screenToFlowPosition, setSelectedNode, setRightSidebarOpen, currentProjectId])
 
   /**
    * Update an existing node's properties
@@ -208,10 +245,43 @@ function SpaceBuilderContent() {
       })
 
       // Save canvas state when nodes are updated
-      spaceBuilderService.saveCanvasState('default', { nodes: newNodes, edges })
+      spaceBuilderService.saveCanvasState(currentProjectId, { nodes: newNodes, edges })
       return newNodes
     })
-  }, [edges, setNodes])
+  }, [edges, setNodes, currentProjectId])
+
+  /**
+   * Load a project by ID
+   * @param projectId - The ID of the project to load
+   */
+  const loadProject = useCallback(async (projectId: string) => {
+    try {
+      const { canvasState } = await spaceBuilderService.getCanvasState(projectId)
+      setNodes(canvasState.nodes)
+      setEdges(canvasState.edges)
+      setCurrentProjectId(projectId)
+      setSelectedNode(null)
+    } catch (error) {
+      console.error('Failed to load project:', error)
+    }
+  }, [setNodes, setEdges])
+
+  /**
+   * Create a new empty project
+   */
+  const createNewProject = useCallback(() => {
+    const newProjectId = `project-${Date.now()}`
+    setNodes([])
+    setEdges([])
+    setCurrentProjectId(newProjectId)
+    setSelectedNode(null)
+    
+    // Save the empty project to create an entry
+    spaceBuilderService.saveCanvasState(newProjectId, { nodes: [], edges: [] }, {
+      name: "New Project",
+      description: ""
+    })
+  }, [setNodes, setEdges])
 
   /**
    * Handle changes to node grouping by managing parent-child relationships and positioning
@@ -221,12 +291,6 @@ function SpaceBuilderContent() {
    * - Manages the node's containment behavior within groups
    * - Handles position reset when grouping nodes
    * - Updates all relevant node properties to maintain consistency
-   * 
-   * Key operations:
-   * - Sets parentNode to link nodes hierarchically
-   * - Updates extent to control containment behavior
-   * - Maintains groupId/parentId in node data
-   * - Resets position when adding to group for proper layout
    * 
    * @param groupId - ID of the group to add node to, or "none" to remove from groups
    */
@@ -248,87 +312,86 @@ function SpaceBuilderContent() {
         // Reset position when adding to group for clean layout
         // Keep existing position when removing from group
         position: groupId === "none" ? selectedNode.position : {
-          x: 50, // Default offset from group edge
-          y: 50  // Default offset from group edge
+          x: 50,
+          y: 50
         }
       }
-      // Propagate node updates through the system
       updateNode(updatedNode)
     }
   }, [selectedNode, updateNode])
 
-  // Save canvas state when nodes or edges change
+  // Auto-save changes on a timer
   useEffect(() => {
+    // Skip immediate save on first render
+    if (nodes.length === 0 && edges.length === 0) return;
+    
     const saveTimeout = setTimeout(() => {
-      spaceBuilderService.saveCanvasState('default', { nodes, edges })
-    }, 1000) // Debounce saves to prevent too many requests
+      spaceBuilderService.saveCanvasState(currentProjectId, { nodes, edges })
+    }, 2000) // Debounce saves to reduce frequency
+    
     return () => clearTimeout(saveTimeout)
-  }, [nodes, edges])
+  }, [nodes, edges, currentProjectId])
 
   return (
-    // Main container with full height and flex layout
-    <div className="h-full flex">
-      {/* Left sidebar for node management and selection */}
+    <div className="flex h-full">
+      {/* Left sidebar */}
       <LeftSidebar 
-        nodes={nodes} // Pass all nodes for tree view
-        isOpen={leftSidebarOpen} // Control sidebar visibility
-        onToggle={() => setLeftSidebarOpen(!leftSidebarOpen)}
-        selectedNode={selectedNode} // Currently selected node
+        nodes={nodes}
+        isOpen={leftSidebarOpen} 
+        onToggle={() => setLeftSidebarOpen(!leftSidebarOpen)} 
+        selectedNode={selectedNode}
         onNodeSelect={(node) => {
-          setSelectedNode(node) // Update selected node
-          setRightSidebarOpen(true) // Open right sidebar to show properties
+          setSelectedNode(node)
+          setRightSidebarOpen(true)
         }}
       />
-      {/* Main canvas area that grows to fill available space */}
-      <div className="flex-grow relative">
-        {/* ReactFlow canvas for node/edge visualization and interaction */}
-        <ReactFlow
-          nodes={nodes} 
-          edges={edges} // Connections between nodes
-          onNodesChange={onNodesChange} // Handle node updates (position, selection etc)
-          onEdgesChange={onEdgesChange} // Handle edge updates
-          onConnect={onConnect} // Handle new connections between nodes
-          nodeTypes={nodeTypes} // Custom node type components
-          onNodeClick={onNodeClick} // Handle node selection
-          onPaneClick={onPaneClick} // Handle deselection
-          fitView // Automatically fit content to viewport
-          snapToGrid={true} // Enable grid snapping for precise positioning
-          snapGrid={[15, 15]} // Grid size for snapping
-          selectNodesOnDrag={false} // Prevent node selection while dragging
-          // Enable node connection features
-          connectOnClick={true}
-          // Style the connection line while dragging
-          connectionLineStyle={{ stroke: '#999', strokeWidth: 2 }}
-          // Define valid connection rules
-          connectionMode={ConnectionMode.Loose}
-          // Only allow connections between group nodes
-          isValidConnection={(connection) => {
-            const sourceNode = nodes.find(n => n.id === connection.source)
-            const targetNode = nodes.find(n => n.id === connection.target)
-            return (
-              sourceNode?.type === 'group' && 
-              targetNode?.type === 'group' &&
-              // Prevent self-connections
-              connection.source !== connection.target &&
-              // Ensure proper handle types are connected
-              connection.sourceHandle === 'child-connector' &&
-              connection.targetHandle === 'parent-connector'
-            )
-          }}
-        >
-          <Controls /> {/* Zoom and pan controls */}
-          <MiniMap /> {/* Overview map for navigation */}
-          {/* Dotted background grid for visual reference */}
-          <Background gap={12} size={3} color="#f1f1f1" variant={BackgroundVariant.Dots} />
-        </ReactFlow>
-        {/* Floating toolbar for adding new nodes */}
-        <FloatingPalette onAddNode={addNode} />
+      
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col h-full">
+        {/* Project management toolbar */}
+        <div className="border-b p-2 flex justify-center">
+          <ProjectManager 
+            currentProjectId={currentProjectId}
+            canvasState={{ nodes, edges }}
+            onLoadProject={loadProject}
+            onNewProject={createNewProject}
+          />
+        </div>
+        
+        {/* ReactFlow canvas */}
+        <div className="flex-1 relative">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            onNodeClick={onNodeClick}
+            onPaneClick={onPaneClick}
+            connectionMode={ConnectionMode.Loose}
+            fitView
+            snapToGrid
+            attributionPosition="bottom-right"
+          >
+            <Controls />
+            <MiniMap />
+            <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+          </ReactFlow>
+          
+          {/* Floating palette - moved outside ReactFlow to prevent event capture issues */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+            <FloatingPalette onAddNode={addNode} />
+          </div>
+        </div>
       </div>
-      <RightSidebar
+      
+      {/* Right sidebar */}
+      <RightSidebar 
+        isOpen={rightSidebarOpen} 
+        onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
         selectedNode={selectedNode}
         onUpdateNode={updateNode}
-        isOpen={rightSidebarOpen}
-        onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
         nodes={nodes}
         onGroupChange={handleGroupChange}
       />

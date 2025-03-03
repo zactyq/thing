@@ -44,6 +44,18 @@ export interface CanvasState {
 }
 
 /**
+ * Metadata for projects saved in localStorage or exported/imported
+ * Contains information about the project but not the actual canvas state
+ */
+export interface ProjectMetadata {
+  id: string;              // Unique identifier for the project
+  name: string;            // Display name for the project
+  description: string;     // Optional description of the project
+  createdAt: string;       // ISO date string of when the project was created
+  lastModified: string;    // ISO date string of when the project was last modified
+}
+
+/**
  * Service response types for API integration
  * These types define the expected shape of API responses
  */

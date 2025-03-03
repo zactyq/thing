@@ -33,7 +33,7 @@ export function FloatingPalette({ onAddNode }: FloatingPaletteProps) {
   }, [])
 
   return (
-    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white rounded-md shadow-md p-2 flex space-x-2">
+    <div className="bg-white rounded-md shadow-md p-2 flex space-x-2">
       {/* Group button appears first with inverse colors */}
       <Button onClick={() => onAddNode("Group", "group")} size="icon" variant="default">
         <Folder className="h-4 w-4" />
