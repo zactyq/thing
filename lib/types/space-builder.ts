@@ -15,12 +15,21 @@ import type { FunctionConfig } from "@/app/space-builder/components/add-function
 export interface Place {
   placeId: string;          // Unique identifier for the place
   name: string;             // Name of the place
+  description?: string;     // Detailed description of the place
   city?: string;            // City where the place is located
   state?: string;           // State/province where the place is located
-  organizationId: string;   // ID of the organization that owns this place
+  organizationId?: string;  // ID of the organization that owns this place
   geolocation?: string;     // Geographic coordinates
   streetAddress?: string;   // Street address
   postalCode?: string;      // Postal/ZIP code
+  address?: string;         // Full address (alternative to separate fields)
+  coordinates?: {           // Precise coordinates for mapping
+    lat: number;
+    lng: number;
+  };
+  type?: string;            // Type of place (e.g., office, warehouse)
+  tags?: string[];          // Tags for categorization
+  [key: string]: unknown;   // Index signature for additional properties
 }
 
 /**

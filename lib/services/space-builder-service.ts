@@ -6,10 +6,11 @@
 
 import type { 
   AssetType, 
-  CanvasState,
   AssetTypesResponse,
+  CanvasState,
   CanvasStateResponse,
-  ProjectMetadata
+  ProjectMetadata,
+  Place
 } from '../types/space-builder'
 import { mockCanvasState } from '../data/mock/canvas-state'
 import type { User, Group, Team, TeamManagementResponse } from '../types/team-management'
@@ -244,23 +245,6 @@ const MOCK_TEAMS: Team[] = [
     groupIds: ["group-002"]
   }
 ];
-
-/**
- * Place interface defines the structure of a location/place in the system
- */
-interface Place {
-  placeId: string;
-  name: string;
-  description?: string;
-  address?: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-  type?: string;
-  tags?: string[];
-  [key: string]: unknown;
-}
 
 /**
  * PlacesResponse interface defines the structure of the response from places-related API calls
