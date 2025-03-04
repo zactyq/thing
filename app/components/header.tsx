@@ -42,9 +42,9 @@ const navItems = [
     label: "Dashboard Builder",
   },
   {
-    href: "/process-builder",
+    href: "/sandbox",
     icon: GitBranch,
-    label: "Process Builder",
+    label: "Workflow Builder",
   },
 ]
 
