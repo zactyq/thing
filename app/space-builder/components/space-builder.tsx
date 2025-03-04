@@ -17,6 +17,7 @@ import ReactFlow, {
   useReactFlow,
   ReactFlowProvider,
   ConnectionMode,
+  type NodeChange,
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { LeftSidebar } from "./left-sidebar"
@@ -332,6 +333,50 @@ function SpaceBuilderContent() {
     return () => clearTimeout(saveTimeout)
   }, [nodes, edges, currentProjectId])
 
+  /**
+   * Custom node change handler
+   * Intercepts node deletions to properly handle parent-child relationships
+   * This prevents the "Parent node not found" error when deleting group nodes
+   */
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    // Check for node removals
+    const removals = changes.filter(change => change.type === 'remove');
+    
+    if (removals.length > 0) {
+      // Get IDs of nodes being removed
+      const removedIds = removals.map(change => change.id);
+      
+      // Update children of deleted parent groups before nodes are removed
+      setNodes(currentNodes => {
+        return currentNodes.map(node => {
+          // If this node's parent is being deleted, remove the parent reference
+          if (node.parentNode && removedIds.includes(node.parentNode)) {
+            return {
+              ...node,
+              parentNode: undefined, // Clear the parent reference
+              extent: undefined,     // Clear the containment constraint
+              data: {
+                ...node.data,
+                groupId: null,      // Clear group ID in data
+                parentId: undefined // Clear parent ID in data
+              }
+            };
+          }
+          return node;
+        });
+      });
+    }
+    
+    // Process all changes including our modified nodes
+    onNodesChange(changes);
+    
+    // If the selected node is being deleted, clear the selection
+    if (selectedNode && removals.some(change => change.id === selectedNode.id)) {
+      setSelectedNode(null);
+      setRightSidebarOpen(false); // Optional: close the sidebar when selected node is deleted
+    }
+  }, [onNodesChange, selectedNode, setSelectedNode, setNodes]);
+
   return (
     <div className="flex h-full">
       {/* Left sidebar */}
@@ -363,7 +408,7 @@ function SpaceBuilderContent() {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange}
+            onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             nodeTypes={nodeTypes}

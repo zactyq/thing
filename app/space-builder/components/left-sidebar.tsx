@@ -1,7 +1,8 @@
 import type { Node } from "reactflow"
-import { ChevronLeft, ChevronRight, Folder, FolderOpen, Check, ChevronsUpDown } from "lucide-react"
+import { ChevronLeft, ChevronRight, Folder, FolderOpen, Check, ChevronsUpDown, MapPin } from "lucide-react"
 import { useState, useEffect } from "react"
 import type { NodeData } from "@/lib/types/space-builder"
+import type { Place } from "@/lib/types/space-builder"
 import { SpaceBuilderService } from "@/lib/services/space-builder-service"
 import { iconMap } from "@/lib/utils/icon-map"
 import type { LucideIcon } from "lucide-react"
@@ -32,30 +33,6 @@ interface LeftSidebarProps {
 // Initialize service
 const spaceBuilderService = new SpaceBuilderService()
 
-// Define frameworks data for the combobox
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-]
-
 /**
  * LeftSidebar component displays a hierarchical view of nodes and groups
  * Similar to a file manager interface, showing groups as folders and nodes as files
@@ -64,7 +41,8 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [assetTypes, setAssetTypes] = useState<Record<string, { id: string; icon: string }>>({})
   const [open, setOpen] = useState(false)
-  const [value, setValue] = useState("")
+  const [places, setPlaces] = useState<Place[]>([])
+  const [selectedPlace, setSelectedPlace] = useState<string>("")
 
   // Load asset types and their icons when component mounts
   useEffect(() => {
@@ -82,6 +60,24 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
     }
     loadAssetTypes()
   }, [])
+  
+  // Load places when component mounts
+  useEffect(() => {
+    const loadPlaces = async () => {
+      try {
+        const { places: loadedPlaces } = await spaceBuilderService.getPlaces()
+        setPlaces(loadedPlaces)
+        
+        // If there's at least one place and no place is selected, select the first one
+        if (loadedPlaces.length > 0 && !selectedPlace) {
+          setSelectedPlace(loadedPlaces[0].placeId)
+        }
+      } catch (error) {
+        console.error('Failed to load places:', error)
+      }
+    }
+    loadPlaces()
+  }, [selectedPlace])
 
   // Auto-expand all groups initially
   useEffect(() => {
@@ -113,6 +109,15 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
     }
     
     return null
+  }
+  
+  // Handle place selection
+  const handlePlaceSelect = (placeId: string) => {
+    setSelectedPlace(placeId)
+    setOpen(false)
+    // In a real application, this would trigger loading of assets for the selected place
+    console.log(`Selected place: ${placeId}`)
+    // You could also add a callback to props to notify parent components
   }
 
   // Early return for collapsed state
@@ -164,6 +169,13 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
     })
   }
 
+  // Get the selected place name for display
+  const getSelectedPlaceName = () => {
+    if (!selectedPlace) return "Select place..."
+    const place = places.find(p => p.placeId === selectedPlace)
+    return place ? place.name : "Select place..."
+  }
+
   return (
     <div className="w-80 bg-white border-r border-gray-200 p-4 relative z-40">
       <button
@@ -180,34 +192,52 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-[200px] justify-between"
+              className="w-full justify-between"
             >
-              {value
-                ? frameworks.find((framework) => framework.value === value)?.label
-                : "Select framework..."}
-              <ChevronsUpDown className="opacity-50" />
+              <div className="flex items-center gap-2 truncate">
+                <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="truncate">{getSelectedPlaceName()}</span>
+              </div>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
+          <PopoverContent className="w-full p-0">
             <Command>
-              <CommandInput placeholder="Search framework..." className="h-9" />
+              <CommandInput placeholder="Search places..." className="h-9" />
               <CommandList>
-                <CommandEmpty>No framework found.</CommandEmpty>
-                <CommandGroup>
-                  {frameworks.map((framework) => (
-                    <CommandItem
-                      key={framework.value}
-                      value={framework.value}
-                      onSelect={(currentValue) => {
-                        setValue(currentValue === value ? "" : currentValue)
-                        setOpen(false)
-                      }}
+                <CommandEmpty>
+                  <div className="p-2 text-sm text-muted-foreground">
+                    No places found. 
+                    <a 
+                      href="/reference-manager" 
+                      className="text-primary ml-1 hover:underline"
                     >
-                      {framework.label}
+                      Add some in Reference Manager
+                    </a>
+                  </div>
+                </CommandEmpty>
+                <CommandGroup heading="Available Places">
+                  {places.map((place) => (
+                    <CommandItem
+                      key={place.placeId}
+                      value={place.placeId}
+                      onSelect={() => handlePlaceSelect(place.placeId)}
+                    >
+                      <div className="flex items-center flex-1 mr-2">
+                        <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <div className="flex flex-col">
+                          <span className="font-medium">{place.name}</span>
+                          {(place.city || place.state) && (
+                            <span className="text-xs text-muted-foreground">
+                              {place.city}{place.city && place.state && ', '}{place.state}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                       <Check
                         className={cn(
                           "ml-auto",
-                          value === framework.value ? "opacity-100" : "opacity-0"
+                          selectedPlace === place.placeId ? "opacity-100" : "opacity-0"
                         )}
                       />
                     </CommandItem>
