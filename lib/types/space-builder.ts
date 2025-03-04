@@ -9,6 +9,21 @@ import type { IconName } from '../utils/icon-map'
 import type { FunctionConfig } from "@/app/space-builder/components/add-function-modal"
 
 /**
+ * Represents a physical location or place in the system
+ * Corresponds to the 'places' table in the database
+ */
+export interface Place {
+  placeId: string;          // Unique identifier for the place
+  name: string;             // Name of the place
+  city?: string;            // City where the place is located
+  state?: string;           // State/province where the place is located
+  organizationId: string;   // ID of the organization that owns this place
+  geolocation?: string;     // Geographic coordinates
+  streetAddress?: string;   // Street address
+  postalCode?: string;      // Postal/ZIP code
+}
+
+/**
  * Represents a category of asset that can be placed in the space builder
  * Examples include workstations, printers, network equipment, etc.
  */

@@ -12,6 +12,7 @@ import type {
   ProjectMetadata
 } from '../types/space-builder'
 import { mockCanvasState } from '../data/mock/canvas-state'
+import type { User, Group, Team, TeamManagementResponse } from '../types/team-management'
 
 /**
  * Configuration for the service layer
@@ -111,6 +112,138 @@ const DEFAULT_ASSET_TYPES: AssetType[] = [
     isActive: true
   }
 ]
+
+// Mock place data for the dropdown
+const MOCK_PLACES = [
+  {
+    placeId: "place-001",
+    name: "Headquarters",
+    city: "San Francisco",
+    state: "CA",
+    organizationId: "org-001"
+  },
+  {
+    placeId: "place-002",
+    name: "Research Center",
+    city: "Boston",
+    state: "MA",
+    organizationId: "org-001"
+  },
+  {
+    placeId: "place-003",
+    name: "Manufacturing Plant",
+    city: "Detroit",
+    state: "MI",
+    organizationId: "org-001"
+  },
+  {
+    placeId: "place-004",
+    name: "Distribution Center",
+    city: "Austin",
+    state: "TX",
+    organizationId: "org-001"
+  },
+  {
+    placeId: "place-005",
+    name: "Innovation Lab",
+    city: "Seattle",
+    state: "WA",
+    organizationId: "org-001"
+  }
+];
+
+// Mock team management data
+const MOCK_USERS: User[] = [
+  {
+    userId: "user-001",
+    name: "Alex Johnson",
+    email: "alex.j@example.com",
+    role: "admin",
+    department: "IT",
+    title: "Systems Architect",
+    groupIds: ["group-001", "group-002"]
+  },
+  {
+    userId: "user-002",
+    name: "Jamie Smith",
+    email: "jamie.s@example.com",
+    role: "manager",
+    department: "Operations",
+    title: "Operations Manager",
+    groupIds: ["group-001"]
+  },
+  {
+    userId: "user-003",
+    name: "Taylor Brown",
+    email: "taylor.b@example.com",
+    role: "editor",
+    department: "Engineering",
+    title: "Network Engineer",
+    groupIds: ["group-002"]
+  },
+  {
+    userId: "user-004",
+    name: "Sam Rivera",
+    email: "sam.r@example.com",
+    role: "viewer",
+    department: "Support",
+    title: "Support Specialist",
+    groupIds: ["group-003"]
+  },
+  {
+    userId: "user-005",
+    name: "Jordan Lee",
+    email: "jordan.l@example.com",
+    role: "editor",
+    department: "Security",
+    title: "Security Analyst",
+    groupIds: ["group-003"]
+  }
+];
+
+const MOCK_GROUPS: Group[] = [
+  {
+    groupId: "group-001",
+    name: "Infrastructure Team",
+    description: "Responsible for core infrastructure management",
+    createdBy: "user-001",
+    createdAt: new Date(2023, 1, 15).toISOString(),
+    memberCount: 2
+  },
+  {
+    groupId: "group-002",
+    name: "Network Team",
+    description: "Handles all network-related tasks and monitoring",
+    createdBy: "user-001",
+    createdAt: new Date(2023, 2, 20).toISOString(),
+    memberCount: 2
+  },
+  {
+    groupId: "group-003",
+    name: "Security Team",
+    description: "Manages security policies and incident response",
+    createdBy: "user-002",
+    createdAt: new Date(2023, 3, 10).toISOString(),
+    memberCount: 2
+  }
+];
+
+const MOCK_TEAMS: Team[] = [
+  {
+    teamId: "team-001",
+    name: "Core Operations",
+    description: "Responsible for day-to-day operations",
+    leadId: "user-002",
+    groupIds: ["group-001", "group-003"]
+  },
+  {
+    teamId: "team-002",
+    name: "Technical Services",
+    description: "Handles all technical implementations and support",
+    leadId: "user-001",
+    groupIds: ["group-002"]
+  }
+];
 
 /**
  * Service class that handles all data operations for the space builder
@@ -407,5 +540,148 @@ export class SpaceBuilderService {
       ...DEFAULT_ASSET_TYPES.find(asset => asset.id === id)!,
       ...updates
     };
+  }
+
+  /**
+   * Get a list of places for the organization
+   * Currently returns mock data, but will later be replaced with API call
+   * @returns Promise resolving to an array of place objects
+   */
+  async getPlaces() {
+    // In the future, this would be an API call
+    // const response = await fetch(`${this.config.baseUrl}/places`, {
+    //   headers: { 'Authorization': `Bearer ${this.config.apiKey}` }
+    // });
+    // return response.json();
+    
+    // Try to get places from localStorage first
+    const storedPlaces = localStorage.getItem('spacebuilder_places');
+    
+    if (storedPlaces) {
+      try {
+        const places = JSON.parse(storedPlaces);
+        return { places };
+      } catch (error) {
+        console.error('Failed to parse stored places:', error);
+      }
+    }
+    
+    // Return mock data if nothing in localStorage
+    return { places: MOCK_PLACES };
+  }
+  
+  /**
+   * Save places to localStorage
+   * In a production environment, this would make an API call to update the backend
+   * @param places - Array of place objects to save
+   */
+  async savePlaces(places: any[]) {
+    // In the future, this would be an API call
+    // const response = await fetch(`${this.config.baseUrl}/places`, {
+    //   method: 'PUT',
+    //   headers: { 
+    //     'Authorization': `Bearer ${this.config.apiKey}`,
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({ places })
+    // });
+    // return response.json();
+    
+    // Save to localStorage
+    localStorage.setItem('spacebuilder_places', JSON.stringify(places));
+    return { success: true };
+  }
+
+  /**
+   * Get users list from localStorage or mock data
+   * @returns Promise resolving to an array of user objects
+   */
+  async getUsers(): Promise<TeamManagementResponse> {
+    // Try to get users from localStorage first
+    const storedUsers = localStorage.getItem('spacebuilder_users');
+    
+    if (storedUsers) {
+      try {
+        const users = JSON.parse(storedUsers);
+        return { users };
+      } catch (error) {
+        console.error('Failed to parse stored users:', error);
+      }
+    }
+    
+    // Return mock data if nothing in localStorage
+    return { users: MOCK_USERS };
+  }
+  
+  /**
+   * Save users to localStorage
+   * @param users - Array of user objects to save
+   */
+  async saveUsers(users: User[]): Promise<TeamManagementResponse> {
+    // Save to localStorage
+    localStorage.setItem('spacebuilder_users', JSON.stringify(users));
+    return { success: true, users };
+  }
+  
+  /**
+   * Get groups list from localStorage or mock data
+   * @returns Promise resolving to an array of group objects
+   */
+  async getGroups(): Promise<TeamManagementResponse> {
+    // Try to get groups from localStorage first
+    const storedGroups = localStorage.getItem('spacebuilder_groups');
+    
+    if (storedGroups) {
+      try {
+        const groups = JSON.parse(storedGroups);
+        return { groups };
+      } catch (error) {
+        console.error('Failed to parse stored groups:', error);
+      }
+    }
+    
+    // Return mock data if nothing in localStorage
+    return { groups: MOCK_GROUPS };
+  }
+  
+  /**
+   * Save groups to localStorage
+   * @param groups - Array of group objects to save
+   */
+  async saveGroups(groups: Group[]): Promise<TeamManagementResponse> {
+    // Save to localStorage
+    localStorage.setItem('spacebuilder_groups', JSON.stringify(groups));
+    return { success: true, groups };
+  }
+  
+  /**
+   * Get teams list from localStorage or mock data
+   * @returns Promise resolving to an array of team objects
+   */
+  async getTeams(): Promise<TeamManagementResponse> {
+    // Try to get teams from localStorage first
+    const storedTeams = localStorage.getItem('spacebuilder_teams');
+    
+    if (storedTeams) {
+      try {
+        const teams = JSON.parse(storedTeams);
+        return { teams };
+      } catch (error) {
+        console.error('Failed to parse stored teams:', error);
+      }
+    }
+    
+    // Return mock data if nothing in localStorage
+    return { teams: MOCK_TEAMS };
+  }
+  
+  /**
+   * Save teams to localStorage
+   * @param teams - Array of team objects to save
+   */
+  async saveTeams(teams: Team[]): Promise<TeamManagementResponse> {
+    // Save to localStorage
+    localStorage.setItem('spacebuilder_teams', JSON.stringify(teams));
+    return { success: true, teams };
   }
 } 
