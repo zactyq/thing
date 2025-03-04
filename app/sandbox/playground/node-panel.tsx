@@ -1,12 +1,26 @@
 "use client"
 
+import React from "react"
 import { Camera, AlertCircle, FileText, MapPin, Clock, Bell, Wifi, Thermometer, BarChart } from "lucide-react"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "../ui/scroll-area"
+import { Separator } from "../ui/separator"
+
+/**
+ * NodeData interface defines the structure of data for workflow nodes
+ * This provides type safety for node data across the application
+ */
+export interface NodeData {
+  id?: string;
+  label: string;
+  description?: string;
+  icon?: string;
+  properties?: Record<string, unknown>;
+  [key: string]: unknown;
+}
 
 interface NodePanelProps {
-  onAddNode: (type: string, data: any) => void
+  onAddNode: (type: string, data: NodeData) => void
 }
 
 export default function NodePanel({ onAddNode }: NodePanelProps) {

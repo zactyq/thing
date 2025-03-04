@@ -22,7 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import TriggerNode from "@/components/nodes/trigger-node"
 import ConditionNode from "@/components/nodes/condition-node"
 import ActionNode from "@/components/nodes/action-node"
-import NodePanel from "@/components/node-panel"
+import NodePanel from "./node-panel"
+import { NodeData } from "./node-panel"
 
 // Define custom node types
 const nodeTypes: NodeTypes = {
@@ -109,7 +110,7 @@ export default function WorkflowBuilder() {
 
   // Add a new node to the workflow
   const addNode = useCallback(
-    (type: string, data: any) => {
+    (type: string, data: NodeData) => {
       const newNode: Node = {
         id: `${nodes.length + 1}`,
         type,

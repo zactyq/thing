@@ -38,7 +38,7 @@ interface WorkflowNodeData {
   label: string;           // Display name for the node
   description: string;     // Brief explanation of the node's purpose
   icon: string;            // Icon identifier to visually represent the node type
-  properties: Record<string, any>; // Node-specific configuration properties
+  properties: Record<string, unknown>; // Node-specific configuration properties
   type?: "trigger" | "condition" | "action"; // The functional role of this node in a workflow
 }
 

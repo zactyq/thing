@@ -75,7 +75,7 @@ export function RightSidebar({ isOpen, onToggle, activeSection }: RightSidebarPr
               <ul className="space-y-2 text-sm">
                 <li className="flex gap-2">
                   <span className="font-medium">Add:</span> 
-                  <span>Click "Add Place" to create a new location</span>
+                  <span>Click &quot;Add Place&quot; to create a new location</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="font-medium">Edit:</span> 

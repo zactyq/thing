@@ -246,6 +246,32 @@ const MOCK_TEAMS: Team[] = [
 ];
 
 /**
+ * Place interface defines the structure of a location/place in the system
+ */
+interface Place {
+  placeId: string;
+  name: string;
+  description?: string;
+  address?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  type?: string;
+  tags?: string[];
+  [key: string]: unknown;
+}
+
+/**
+ * PlacesResponse interface defines the structure of the response from places-related API calls
+ */
+interface PlacesResponse {
+  places?: Place[];
+  success?: boolean;
+  message?: string;
+}
+
+/**
  * Service class that handles all data operations for the space builder
  * Currently uses mock data but structured to easily switch to API calls
  * Now enhanced with local storage capabilities for project persistence
@@ -571,11 +597,11 @@ export class SpaceBuilderService {
   }
   
   /**
-   * Save places to localStorage
+   * Saves places to storage
    * In a production environment, this would make an API call to update the backend
    * @param places - Array of place objects to save
    */
-  async savePlaces(places: any[]) {
+  async savePlaces(places: Place[]): Promise<PlacesResponse> {
     // In the future, this would be an API call
     // const response = await fetch(`${this.config.baseUrl}/places`, {
     //   method: 'PUT',

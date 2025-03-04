@@ -137,19 +137,28 @@ const actionNodes = [
 ];
 
 /**
- * NodePanel component provides a palette of available node types
- * that users can add to the workflow.
- * 
- * It organizes nodes into categories (Triggers, Conditions, Actions)
- * and allows adding nodes to the workflow canvas with a click.
+ * NodeData interface defines the structure of data for workflow nodes
+ * This provides type safety for node data across the application
+ */
+export interface NodeData {
+  id?: string;
+  label: string;
+  description?: string;
+  icon?: string;
+  properties?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+/**
+ * NodePanelProps interface defines the properties for the NodePanel component
  */
 interface NodePanelProps {
-  onAddNode: (type: string, data: any) => void;
+  onAddNode: (type: string, data: NodeData) => void;
 }
 
 export default function NodePanel({ onAddNode }: NodePanelProps) {
   // Helper function to render a node item in the panel
-  const renderNodeItem = (node: any, IconComponent: React.ReactNode) => (
+  const renderNodeItem = (node: NodeData, IconComponent: React.ReactNode) => (
     <Card 
       key={node.id} 
       className="p-3 mb-2 cursor-pointer hover:bg-gray-50"
