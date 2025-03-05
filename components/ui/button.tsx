@@ -4,23 +4,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-/**
- * Button component for interactive elements that users can click
- * 
- * This versatile button component supports multiple variants:
- * - default: Standard primary button
- * - destructive: For delete/destructive actions
- * - outline: Outlined style with minimal visual weight
- * - secondary: Alternative button style
- * - ghost: Button with no background until hovered
- * - link: Appears as a link but with button behavior
- * 
- * It also supports different sizes and can be rendered as any element
- * through the asChild prop (using Radix UI's Slot pattern).
- */
-
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {

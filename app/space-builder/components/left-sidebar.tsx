@@ -66,11 +66,15 @@ export function LeftSidebar({ nodes, isOpen, onToggle, selectedNode, onNodeSelec
     const loadPlaces = async () => {
       try {
         const { places: loadedPlaces } = await spaceBuilderService.getPlaces()
-        setPlaces(loadedPlaces)
         
-        // If there's at least one place and no place is selected, select the first one
-        if (loadedPlaces.length > 0 && !selectedPlace) {
-          setSelectedPlace(loadedPlaces[0].placeId)
+        // Add null check to handle the case where places might be undefined
+        if (loadedPlaces) {
+          setPlaces(loadedPlaces)
+          
+          // If there's at least one place and no place is selected, select the first one
+          if (loadedPlaces.length > 0 && !selectedPlace) {
+            setSelectedPlace(loadedPlaces[0].placeId)
+          }
         }
       } catch (error) {
         console.error('Failed to load places:', error)

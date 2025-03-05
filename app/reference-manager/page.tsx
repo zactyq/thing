@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { LeftSidebar } from './components/left-sidebar'
 import { RightSidebar } from './components/right-sidebar'
 import { PlacesManager } from './components/places-manager'
+import { StatusesManager } from './components/statuses-manager'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Settings, Cog, Home, LucideIcon } from 'lucide-react'
+import { MapPin, Settings, Cog, Home, LucideIcon, Activity } from 'lucide-react'
 
 // Types for the content sections
 interface ContentSection {
@@ -26,6 +27,7 @@ interface ContentSection {
  * - Collapsible left and right sidebars
  * - Tabbed interface for different management sections
  * - Places management for the space builder
+ * - Status management for tracking operational states
  * - Future expandability for additional reference types
  */
 export default function ReferenceManagerPage() {
@@ -40,6 +42,12 @@ export default function ReferenceManagerPage() {
       label: 'Places',
       icon: MapPin,
       component: <PlacesManager />
+    },
+    {
+      id: 'statuses',
+      label: 'Statuses',
+      icon: Activity,
+      component: <StatusesManager />
     },
     {
       id: 'settings',

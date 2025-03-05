@@ -1,49 +1,62 @@
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import { Camera, Bell, Mail, Clock, Smartphone, MessageSquare } from 'lucide-react';
+import { Camera, Bell, Mail, Clock, Smartphone, MessageSquare, MapPin } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { NodeData } from '@/app/process-builder/types';
 
 /**
  * TriggerNode represents the starting point of a workflow
- * Triggers are events that initiate a workflow execution
- * Examples include: sensor readings, scheduled events, manual activations, etc.
+ * 
+ * Triggers are events that initiate a workflow execution.
+ * This component visualizes trigger nodes in the workflow builder with a distinctive
+ * appearance and provides an output connection handle for linking to subsequent nodes.
+ * 
+ * Examples of triggers include:
+ * - Sensor readings (IoT devices, cameras)
+ * - Scheduled events (time-based triggers)
+ * - Manual activations (user interactions)
+ * - External system events (webhooks, API calls)
+ * 
+ * @param props - The node props from ReactFlow, containing the node data
  */
-function TriggerNode({ data }: NodeProps) {
-  // Map of available icons for different trigger types
-  const iconMap: Record<string, React.ReactNode> = {
-    Camera: <Camera className="h-4 w-4" />,
-    Bell: <Bell className="h-4 w-4" />,
-    Mail: <Mail className="h-4 w-4" />,
-    Clock: <Clock className="h-4 w-4" />,
-    Smartphone: <Smartphone className="h-4 w-4" />,
-    MessageSquare: <MessageSquare className="h-4 w-4" />,
+function TriggerNode({ data }: NodeProps<NodeData>) {
+  // Map icon string to the corresponding Lucide icon component
+  const getIcon = () => {
+    switch (data.icon) {
+      case 'Camera': return <Camera className="h-4 w-4 text-red-500" />;
+      case 'Bell': return <Bell className="h-4 w-4 text-red-500" />;
+      case 'Mail': return <Mail className="h-4 w-4 text-red-500" />;
+      case 'Clock': return <Clock className="h-4 w-4 text-red-500" />;
+      case 'Smartphone': return <Smartphone className="h-4 w-4 text-red-500" />;
+      case 'MessageSquare': return <MessageSquare className="h-4 w-4 text-red-500" />;
+      case 'MapPin': return <MapPin className="h-4 w-4 text-red-500" />;
+      default: return <Bell className="h-4 w-4 text-red-500" />;
+    }
   };
 
-  // Get the icon based on the data or use a default
-  const Icon = data.icon && iconMap[data.icon] ? iconMap[data.icon] : <Bell className="h-4 w-4" />;
-
   return (
-    <div className="bg-red-50 border border-red-200 rounded-md p-3 min-w-[150px] shadow-sm">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="p-1 bg-red-100 rounded text-red-600">
-          {Icon}
+    <Card className={cn("w-[220px] border-2 border-red-200 shadow-md")}>
+      <CardHeader className="p-3 pb-0 flex flex-row items-center justify-between space-y-0">
+        <div className="flex items-center space-x-2">
+          {getIcon()}
+          <CardTitle className="text-sm font-medium">{data.label}</CardTitle>
         </div>
-        <div className="text-sm font-medium">{data.label}</div>
-      </div>
+        <Badge variant="outline" className="bg-red-50 text-red-600 text-xs">Trigger</Badge>
+      </CardHeader>
+      <CardContent className="p-3 pt-2">
+        <CardDescription className="text-xs">{data.description}</CardDescription>
+      </CardContent>
       
-      {data.description && (
-        <div className="text-xs text-gray-500 mb-2">{data.description}</div>
-      )}
-      
-      {/* Only output connection handle - triggers can only have outgoing connections */}
-      <Handle 
-        type="source" 
-        position={Position.Bottom} 
-        id="a" 
-        className="w-2 h-2 bg-red-500"
+      {/* Output handle for connecting to the next node */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-red-500"
       />
-    </div>
+    </Card>
   );
 }
 
-// Memoize the component to prevent unnecessary re-renders
 export default memo(TriggerNode); 
