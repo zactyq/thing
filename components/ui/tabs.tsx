@@ -5,19 +5,6 @@ import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
 
-/**
- * Tabs component for creating tabbed interfaces
- * 
- * This component uses Radix UI Tabs primitives to create accessible tab interfaces
- * that support keyboard navigation and screen readers.
- * 
- * The Tabs component system includes:
- * - Tabs: Main container component that manages the tab state
- * - TabsList: Container for the tab triggers
- * - TabsTrigger: The clickable tab button elements
- * - TabsContent: The content associated with each tab
- */
-
 const Tabs = TabsPrimitive.Root
 
 const TabsList = React.forwardRef<
@@ -65,4 +52,4 @@ const TabsContent = React.forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
-export { Tabs, TabsList, TabsTrigger, TabsContent } 
+export { Tabs, TabsList, TabsTrigger, TabsContent }

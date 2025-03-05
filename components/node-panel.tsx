@@ -4,10 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Camera, AlertCircle, FileText, Mail, Bell, GitBranch, Smartphone, Database, Wrench, Clock } from 'lucide-react';
 
 // Node type data definitions
-const triggerNodes = [
+const triggerNodes: NodeData[] = [
   {
     id: 'camera-trigger',
-    type: 'triggerNode',
+    type: 'trigger',
     label: 'Camera Trigger',
     description: 'Triggered when camera detects movement or events',
     icon: 'Camera',
@@ -19,7 +19,7 @@ const triggerNodes = [
   },
   {
     id: 'schedule-trigger',
-    type: 'triggerNode',
+    type: 'trigger',
     label: 'Schedule Trigger',
     description: 'Triggered at specified times or intervals',
     icon: 'Clock',
@@ -31,7 +31,7 @@ const triggerNodes = [
   },
   {
     id: 'notification-trigger',
-    type: 'triggerNode',
+    type: 'trigger',
     label: 'Notification Trigger',
     description: 'Triggered when system notifications are received',
     icon: 'Bell',
@@ -43,7 +43,7 @@ const triggerNodes = [
   },
   {
     id: 'mobile-trigger',
-    type: 'triggerNode',
+    type: 'trigger',
     label: 'Mobile App Trigger',
     description: 'Triggered by mobile application events',
     icon: 'Smartphone',
@@ -55,10 +55,10 @@ const triggerNodes = [
   }
 ];
 
-const conditionNodes = [
+const conditionNodes: NodeData[] = [
   {
     id: 'data-condition',
-    type: 'conditionNode',
+    type: 'condition',
     label: 'Data Condition',
     description: 'Evaluate data against specified criteria',
     icon: 'AlertCircle',
@@ -71,7 +71,7 @@ const conditionNodes = [
   },
   {
     id: 'branch-condition',
-    type: 'conditionNode',
+    type: 'condition',
     label: 'Branch Decision',
     description: 'Create workflow branches based on multiple criteria',
     icon: 'GitBranch',
@@ -82,10 +82,10 @@ const conditionNodes = [
   }
 ];
 
-const actionNodes = [
+const actionNodes: NodeData[] = [
   {
     id: 'report-action',
-    type: 'actionNode',
+    type: 'action',
     label: 'Generate Report',
     description: 'Create and distribute a report',
     icon: 'FileText',
@@ -97,7 +97,7 @@ const actionNodes = [
   },
   {
     id: 'email-action',
-    type: 'actionNode',
+    type: 'action',
     label: 'Send Email',
     description: 'Send an email notification',
     icon: 'Mail',
@@ -110,7 +110,7 @@ const actionNodes = [
   },
   {
     id: 'database-action',
-    type: 'actionNode',
+    type: 'action',
     label: 'Database Update',
     description: 'Update records in the database',
     icon: 'Database',
@@ -123,7 +123,7 @@ const actionNodes = [
   },
   {
     id: 'maintenance-action',
-    type: 'actionNode',
+    type: 'action',
     label: 'Maintenance Task',
     description: 'Schedule or assign a maintenance task',
     icon: 'Wrench',
@@ -143,10 +143,16 @@ const actionNodes = [
 export interface NodeData {
   id?: string;
   label: string;
-  description?: string;
-  icon?: string;
-  properties?: Record<string, unknown>;
+  description: string;
+  icon: string;
+  properties: Record<string, unknown>;
+  type?: "trigger" | "condition" | "action";
   [key: string]: unknown;
+}
+
+// Helper function to safely convert undefined or unknown values to string
+export function asString(value: unknown): string {
+  return typeof value === 'string' ? value : String(value || '');
 }
 
 /**
@@ -162,11 +168,7 @@ export default function NodePanel({ onAddNode }: NodePanelProps) {
     <Card 
       key={node.id} 
       className="p-3 mb-2 cursor-pointer hover:bg-gray-50"
-      onClick={() => onAddNode(node.type, {
-        ...node,
-        type: node.type === 'triggerNode' ? 'trigger' : 
-              node.type === 'conditionNode' ? 'condition' : 'action'
-      })}
+      onClick={() => onAddNode(node.type as string, node)}
     >
       <div className="flex items-center gap-2">
         <div className="p-1 rounded">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, InfoIcon, HelpCircle, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, InfoIcon, HelpCircle, MapPin, Activity } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
 interface RightSidebarProps {
@@ -84,6 +84,47 @@ export function RightSidebar({ isOpen, onToggle, activeSection }: RightSidebarPr
                 <li className="flex gap-2">
                   <span className="font-medium">Delete:</span> 
                   <span>Click the trash icon to remove a place</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        )}
+        
+        {activeSection === 'statuses' && (
+          <div className="space-y-4">
+            <div className="bg-purple-50 p-4 rounded-md border border-purple-200">
+              <h3 className="font-medium flex items-center text-purple-700">
+                <Activity className="h-4 w-4 mr-2" />
+                About Status Management
+              </h3>
+              <p className="mt-2 text-sm text-purple-700">
+                Statuses represent operational states that can be assigned to assets or spaces.
+                Create and manage statuses with different priorities, colors, and categories.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="font-medium">Managing Statuses</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex gap-2">
+                  <span className="font-medium">Add:</span> 
+                  <span>Click &quot;Add Status&quot; to create a new status</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-medium">Edit:</span> 
+                  <span>Use the pencil icon to modify an existing status</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-medium">Delete:</span> 
+                  <span>Click the trash icon to remove a status</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-medium">Colors:</span> 
+                  <span>Choose colors to visually represent different statuses</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-medium">Priority:</span> 
+                  <span>Set priority levels from High (1) to Low (5)</span>
                 </li>
               </ul>
             </div>

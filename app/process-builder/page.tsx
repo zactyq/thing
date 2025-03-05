@@ -1,42 +1,23 @@
-'use client'
-
-import { useState } from 'react'
-import { LeftSidebar } from '../process-builder/components/left-sidebar'
-import { RightSidebar } from '../process-builder/components/right-sidebar'
+import WorkflowBuilder from "@/app/process-builder/workflow-builder"
 
 /**
- * ProcessBuilder Page Component
+ * ProcessBuilderPage component serves as the main interface for creating and editing process workflows
  * 
- * The main container for the process flow building interface.
- * Manages the state of both sidebars and provides the main canvas area
- * for process flow design and configuration.
- * Layout follows the same pattern as other builder pages for consistency.
+ * This page integrates the WorkflowBuilder component to provide a comprehensive visual workflow design environment.
+ * 
+ * Features:
+ * - Drag and drop interface for creating workflow processes
+ * - Visual node connections to define process flow
+ * - Support for triggers, conditions, and actions
+ * - Property editing for workflow nodes
+ * - Consistent viewport height calculations with other builder tools
+ * - Responsive design that works across different screen sizes
  */
 export default function ProcessBuilderPage() {
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true)
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true)
-
   return (
-    <div className="h-[calc(100vh-3.5rem)]">
-      <div className="flex h-full">
-        <LeftSidebar 
-          isOpen={isLeftSidebarOpen}
-          onToggle={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-        />
-        
-        <main className="flex-1 overflow-hidden">
-          <div className="h-full w-full bg-background/50 p-4">
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              Process Builder Canvas
-            </div>
-          </div>
-        </main>
-
-        <RightSidebar 
-          isOpen={isRightSidebarOpen}
-          onToggle={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-        />
-      </div>
-    </div>
+    <main className="h-[calc(100vh-3.5rem)] flex-1">
+      <WorkflowBuilder />
+    </main>
   )
-} 
+}
+

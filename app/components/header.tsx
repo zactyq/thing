@@ -32,7 +32,7 @@ const navItems = [
     label: "Reference Manager",
   },
   {
-    href: "/teams",
+    href: "/teams-manager",
     icon: Users,
     label: "Teams",
   },
@@ -42,7 +42,7 @@ const navItems = [
     label: "Dashboard Builder",
   },
   {
-    href: "/sandbox",
+    href: "/process-builder",
     icon: GitBranch,
     label: "Workflow Builder",
   },

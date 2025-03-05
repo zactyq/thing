@@ -10,7 +10,8 @@ import type {
   CanvasState,
   CanvasStateResponse,
   ProjectMetadata,
-  Place
+  Place,
+  Status
 } from '../types/space-builder'
 import { mockCanvasState } from '../data/mock/canvas-state'
 import type { User, Group, Team, TeamManagementResponse } from '../types/team-management'
@@ -27,7 +28,9 @@ interface ServiceConfig {
 // Storage keys used for localStorage
 const STORAGE_KEYS = {
   PROJECTS_LIST: 'space_builder_projects',
-  PROJECT_PREFIX: 'space_builder_project_'
+  PROJECT_PREFIX: 'space_builder_project_',
+  PLACES: 'space_builder_places',
+  STATUSES: 'space_builder_statuses'
 }
 
 const DEFAULT_ASSET_TYPES: AssetType[] = [
@@ -153,6 +156,65 @@ const MOCK_PLACES = [
   }
 ];
 
+// Mock status data for the dropdown
+const MOCK_STATUSES = [
+  {
+    statusId: "status-001",
+    name: "Operational",
+    description: "System or asset is fully operational with no issues",
+    color: "#4CAF50", // Green
+    category: "Operational",
+    priority: 3,
+    organizationId: "org-001",
+    isDefault: true,
+    isActive: true
+  },
+  {
+    statusId: "status-002",
+    name: "Under Maintenance",
+    description: "System or asset is currently undergoing scheduled maintenance",
+    color: "#FFC107", // Amber
+    category: "Operational",
+    priority: 2,
+    organizationId: "org-001",
+    isDefault: true,
+    isActive: true
+  },
+  {
+    statusId: "status-003",
+    name: "Critical Alert",
+    description: "System or asset has a critical issue requiring immediate attention",
+    color: "#F44336", // Red
+    category: "Operational",
+    priority: 1,
+    organizationId: "org-001",
+    isDefault: true,
+    isActive: true
+  },
+  {
+    statusId: "status-004",
+    name: "Restricted Access",
+    description: "Access to this area or asset is restricted to authorized personnel only",
+    color: "#9C27B0", // Purple
+    category: "Security",
+    priority: 2,
+    organizationId: "org-001",
+    isDefault: true,
+    isActive: true
+  },
+  {
+    statusId: "status-005",
+    name: "Offline",
+    description: "System or asset is currently offline or unavailable",
+    color: "#607D8B", // Blue Grey
+    category: "Operational",
+    priority: 2,
+    organizationId: "org-001",
+    isDefault: true,
+    isActive: true
+  }
+];
+
 // Mock team management data
 const MOCK_USERS: User[] = [
   {
@@ -251,6 +313,15 @@ const MOCK_TEAMS: Team[] = [
  */
 interface PlacesResponse {
   places?: Place[];
+  success?: boolean;
+  message?: string;
+}
+
+/**
+ * StatusesResponse interface defines the structure of the response from statuses-related API calls
+ */
+interface StatusesResponse {
+  statuses?: Status[];
   success?: boolean;
   message?: string;
 }
@@ -553,19 +624,14 @@ export class SpaceBuilderService {
   }
 
   /**
-   * Get a list of places for the organization
-   * Currently returns mock data, but will later be replaced with API call
-   * @returns Promise resolving to an array of place objects
+   * Retrieves the list of places from storage or initializes with mock data if none exists
+   * In a production environment, this would make an API call to fetch places
+   * 
+   * @returns Promise resolving to a PlacesResponse object containing the places array
    */
-  async getPlaces() {
-    // In the future, this would be an API call
-    // const response = await fetch(`${this.config.baseUrl}/places`, {
-    //   headers: { 'Authorization': `Bearer ${this.config.apiKey}` }
-    // });
-    // return response.json();
-    
+  async getPlaces(): Promise<PlacesResponse> {
     // Try to get places from localStorage first
-    const storedPlaces = localStorage.getItem('spacebuilder_places');
+    const storedPlaces = localStorage.getItem(STORAGE_KEYS.PLACES);
     
     if (storedPlaces) {
       try {
@@ -581,24 +647,15 @@ export class SpaceBuilderService {
   }
   
   /**
-   * Saves places to storage
-   * In a production environment, this would make an API call to update the backend
-   * @param places - Array of place objects to save
+   * Saves the list of places to storage
+   * In a production environment, this would make an API call to update places
+   * 
+   * @param places - Array of Place objects to save
+   * @returns Promise resolving to a PlacesResponse object
    */
   async savePlaces(places: Place[]): Promise<PlacesResponse> {
-    // In the future, this would be an API call
-    // const response = await fetch(`${this.config.baseUrl}/places`, {
-    //   method: 'PUT',
-    //   headers: { 
-    //     'Authorization': `Bearer ${this.config.apiKey}`,
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({ places })
-    // });
-    // return response.json();
-    
     // Save to localStorage
-    localStorage.setItem('spacebuilder_places', JSON.stringify(places));
+    localStorage.setItem(STORAGE_KEYS.PLACES, JSON.stringify(places));
     return { success: true };
   }
 
@@ -693,5 +750,60 @@ export class SpaceBuilderService {
     // Save to localStorage
     localStorage.setItem('spacebuilder_teams', JSON.stringify(teams));
     return { success: true, teams };
+  }
+
+  /**
+   * Retrieves the list of statuses from storage or initializes with mock data if none exists
+   * In a production environment, this would make an API call to fetch statuses
+   * 
+   * @returns Promise resolving to a StatusesResponse object containing the statuses array
+   */
+  async getStatuses(): Promise<StatusesResponse> {
+    try {
+      // Check if we have statuses in localStorage
+      const storedStatuses = localStorage.getItem(STORAGE_KEYS.STATUSES);
+      
+      if (storedStatuses) {
+        // If we have stored statuses, parse and return them
+        const statuses = JSON.parse(storedStatuses) as Status[];
+        return { statuses, success: true };
+      } else {
+        // If no stored statuses, initialize with mock data
+        localStorage.setItem(STORAGE_KEYS.STATUSES, JSON.stringify(MOCK_STATUSES));
+        return { statuses: MOCK_STATUSES, success: true };
+      }
+    } catch (error) {
+      console.error('Error retrieving statuses:', error);
+      return { 
+        success: false, 
+        message: 'Failed to retrieve statuses. Please try again.' 
+      };
+    }
+  }
+
+  /**
+   * Saves the list of statuses to storage
+   * In a production environment, this would make an API call to update statuses
+   * 
+   * @param statuses - Array of Status objects to save
+   * @returns Promise resolving to a StatusesResponse object
+   */
+  async saveStatuses(statuses: Status[]): Promise<StatusesResponse> {
+    try {
+      // Save statuses to localStorage
+      localStorage.setItem(STORAGE_KEYS.STATUSES, JSON.stringify(statuses));
+      
+      return { 
+        statuses, 
+        success: true,
+        message: 'Statuses saved successfully.'
+      };
+    } catch (error) {
+      console.error('Error saving statuses:', error);
+      return { 
+        success: false, 
+        message: 'Failed to save statuses. Please try again.' 
+      };
+    }
   }
 } 

@@ -65,7 +65,9 @@ export function PlacesManager() {
       try {
         setLoading(true)
         const { places } = await spaceBuilderService.getPlaces()
-        setPlaces(places)
+        if (places) {
+          setPlaces(places)
+        }
       } catch (error) {
         console.error('Failed to load places:', error)
       } finally {

@@ -2,19 +2,6 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-/**
- * Card component for displaying content in a contained, styled box
- * Used to group related information and actions 
- * 
- * The Card component system includes:
- * - Card: Main container element with styling and structure
- * - CardHeader: Header section for titles
- * - CardTitle: Title element within header
- * - CardDescription: Description text within header
- * - CardContent: Main content area
- * - CardFooter: Footer section for actions/buttons
- */
-
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -43,10 +30,10 @@ const CardHeader = React.forwardRef<
 CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <h3
+  <div
     ref={ref}
     className={cn(
       "text-2xl font-semibold leading-none tracking-tight",
@@ -58,10 +45,10 @@ const CardTitle = React.forwardRef<
 CardTitle.displayName = "CardTitle"
 
 const CardDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <p
+  <div
     ref={ref}
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
@@ -89,4 +76,4 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } 
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

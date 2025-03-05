@@ -1,60 +1,74 @@
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import { FileText, Wrench, Mail, Phone, Database, Printer, Save, Download, Upload } from 'lucide-react';
+import { FileText, Wrench, Mail, Phone, Database, Printer, Save, Download, Upload, Bell, BarChart } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { NodeData } from '@/app/process-builder/types';
 
 /**
  * ActionNode represents an operation to be performed in a workflow
- * Actions are tasks that the system executes when workflow reaches this node
- * Examples include: sending notifications, updating database records, generating reports, etc.
+ * 
+ * Actions are tasks that the system executes when the workflow reaches this node.
+ * This component visualizes action nodes in the workflow builder with a distinctive
+ * appearance and provides both input and output connection handles for creating
+ * sequential operations in the workflow.
+ * 
+ * Examples of actions include:
+ * - Sending notifications (emails, SMS, push notifications)
+ * - Data operations (database updates, file generation)
+ * - Integration actions (API calls, webhook triggers)
+ * - System operations (logging, analytics recording)
+ * 
+ * @param props - The node props from ReactFlow, containing the node data
  */
-function ActionNode({ data }: NodeProps) {
-  // Map of available icons for different action types
-  const iconMap: Record<string, React.ReactNode> = {
-    FileText: <FileText className="h-4 w-4" />,
-    Wrench: <Wrench className="h-4 w-4" />,
-    Mail: <Mail className="h-4 w-4" />,
-    Phone: <Phone className="h-4 w-4" />,
-    Database: <Database className="h-4 w-4" />,
-    Printer: <Printer className="h-4 w-4" />,
-    Save: <Save className="h-4 w-4" />,
-    Download: <Download className="h-4 w-4" />,
-    Upload: <Upload className="h-4 w-4" />,
+function ActionNode({ data }: NodeProps<NodeData>) {
+  // Map icon string to the corresponding Lucide icon component
+  const getIcon = () => {
+    switch (data.icon) {
+      case 'FileText': return <FileText className="h-4 w-4 text-green-500" />;
+      case 'Wrench': return <Wrench className="h-4 w-4 text-green-500" />;
+      case 'Mail': return <Mail className="h-4 w-4 text-green-500" />;
+      case 'Phone': return <Phone className="h-4 w-4 text-green-500" />;
+      case 'Database': return <Database className="h-4 w-4 text-green-500" />;
+      case 'Printer': return <Printer className="h-4 w-4 text-green-500" />;
+      case 'Save': return <Save className="h-4 w-4 text-green-500" />;
+      case 'Download': return <Download className="h-4 w-4 text-green-500" />;
+      case 'Upload': return <Upload className="h-4 w-4 text-green-500" />;
+      case 'Bell': return <Bell className="h-4 w-4 text-green-500" />;
+      case 'BarChart': return <BarChart className="h-4 w-4 text-green-500" />;
+      default: return <Wrench className="h-4 w-4 text-green-500" />;
+    }
   };
 
-  // Get the icon based on the data or use a default
-  const Icon = data.icon && iconMap[data.icon] ? iconMap[data.icon] : <FileText className="h-4 w-4" />;
-
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-md p-3 min-w-[150px] shadow-sm">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="p-1 bg-slate-100 rounded text-slate-600">
-          {Icon}
+    <Card className={cn("w-[220px] border-2 border-green-200 shadow-md")}>
+      <CardHeader className="p-3 pb-0 flex flex-row items-center justify-between space-y-0">
+        <div className="flex items-center space-x-2">
+          {getIcon()}
+          <CardTitle className="text-sm font-medium">{data.label}</CardTitle>
         </div>
-        <div className="text-sm font-medium">{data.label}</div>
-      </div>
+        <Badge variant="outline" className="bg-green-50 text-green-600 text-xs">Action</Badge>
+      </CardHeader>
+      <CardContent className="p-3 pt-2">
+        <CardDescription className="text-xs">{data.description}</CardDescription>
+      </CardContent>
       
-      {data.description && (
-        <div className="text-xs text-gray-500 mb-2">{data.description}</div>
-      )}
-      
-      {/* Input connection handle at the top */}
-      <Handle 
-        type="target" 
-        position={Position.Top} 
-        id="a" 
-        className="w-2 h-2 bg-slate-500"
+      {/* Input handle for connecting from previous nodes */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-green-500"
       />
       
-      {/* Output connection handle at the bottom - can continue to next action */}
-      <Handle 
-        type="source" 
-        position={Position.Bottom} 
-        id="b"
-        className="w-2 h-2 bg-slate-500"
+      {/* Output handle for connecting to the next node */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-green-500"
       />
-    </div>
+    </Card>
   );
 }
 
-// Memoize the component to prevent unnecessary re-renders
 export default memo(ActionNode); 

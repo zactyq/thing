@@ -33,6 +33,29 @@ export interface Place {
 }
 
 /**
+ * Represents a status that can be assigned to assets or spaces in the system
+ * Corresponds to the 'statuses' table in the database
+ * 
+ * Statuses can represent operational states (e.g., "Operational", "Maintenance"),
+ * security levels (e.g., "Secure", "Restricted"), or any other categorical state
+ * that needs to be tracked and managed within the space builder.
+ */
+export interface Status {
+  statusId: string;         // Unique identifier for the status
+  name: string;             // Display name for the status (e.g., "Operational", "Under Maintenance")
+  description?: string;     // Detailed description of what this status represents
+  color?: string;           // Color code for visual representation (e.g., "#00FF00" for green)
+  icon?: IconName;          // Icon identifier from our icon map
+  category?: string;        // Grouping category (e.g., "Operational", "Security", "Availability")
+  priority?: number;        // Numeric priority level (lower numbers = higher priority)
+  organizationId?: string;  // ID of the organization that owns this status
+  isDefault?: boolean;      // Whether this is a default status option
+  isActive?: boolean;       // Whether this status is currently available for use
+  tags?: string[];          // Tags for categorization and filtering
+  [key: string]: unknown;   // Index signature for additional properties
+}
+
+/**
  * Represents a category of asset that can be placed in the space builder
  * Examples include workstations, printers, network equipment, etc.
  */
